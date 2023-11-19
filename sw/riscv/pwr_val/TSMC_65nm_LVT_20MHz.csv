@@ -1,0 +1,29 @@
+module,,,leakage,dynamic,total,retentive
+x-heep,,,,,,
+,cpu,,4.46E-05,1.66E-05,6.12E-05,-
+,bus ao,,3.14E-05,5.32E-06,3.67E-05,-
+,debug ao,,8.12E-06,1.48E-04,1.56E-04,-
+,alwayson peripheral subsystem,,,,,
+,,soc ctrl ao,7.77E-07,2.02E-06,2.80E-06,-
+,,boot rom ao,4.40E-07,0.00E+00,4.40E-07,-
+,,spi flash ao,3.56E-05,8.56E-05,1.21E-04,-
+,,spi ao,3.39E-05,6.50E-05,9.89E-05,-
+,,power manager ao,5.59E-06,5.10E-05,5.66E-05,-
+,,timer ao,4.79E-06,8.76E-06,1.36E-05,-
+,,dma ao,3.51E-06,4.66E-06,8.17E-06,-
+,,fast int ctrl ao,3.76E-07,3.22E-07,6.98E-07,-
+,,gpio ao,3.69E-06,1.78E-05,2.15E-05,-
+,,uart ao,5.12E-06,4.32E-05,4.83E-05,-
+,peripheral subsystem,,,,,
+,,plic,7.13E-06,8.50E-05,9.21E-05,-
+,,gpio,4.18E-06,4.50E-05,4.92E-05,-
+,,i2c,1.51E-05,7.38E-05,8.89E-05,-
+,,timer,4.62E-06,8.76E-06,1.34E-05,-
+,,spi,3.39E-05,6.50E-05,9.89E-05,-
+,memory subsystem,,,,,
+,,ram bank 0,0.00E+00,0.00E+00,0.00E+00,0.00E+00
+,,ram bank 1,0.00E+00,0.00E+00,0.00E+00,0.00E+00
+,,ram bank 2,0.00E+00,0.00E+00,0.00E+00,0.00E+00
+,,ram bank 3,0.00E+00,0.00E+00,0.00E+00,0.00E+00
+,,,,,,
+external,,,1.04E-05,4.38E-05,5.42E-05,
