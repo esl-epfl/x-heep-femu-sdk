@@ -5,3 +5,7 @@
 *.dis
 *.map
 *.do
+
+sw/arm/jupyter_notebooks/.ipynb_checkpoints/
+sw/arm/sdk/__pycache__/
+sw/riscv/build/
