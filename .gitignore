@@ -1,0 +1,7 @@
+*.log
+*.so
+*.hex
+*.elf
+*.dis
+*.map
+*.do
