@@ -31,6 +31,8 @@
 volatile int8_t dma_intr_flag;
 
 spi_host_t spi_host_flash;
+soc_ctrl_t soc_ctrl;
+dma_t dma;
 
 void handler_irq_fast_dma(void)
 {
@@ -114,9 +116,8 @@ void read_from_flash(spi_host_t *SPI, dma_t *DMA, uint32_t *data, uint32_t byte_
     }
 }
 
-int main(int argc, char *argv[])
+void vadc_init()
 {
-    soc_ctrl_t soc_ctrl;
     soc_ctrl.base_addr = mmio_region_from_addr((uintptr_t)SOC_CTRL_START_ADDRESS);
     soc_ctrl_select_spi_host(&soc_ctrl);
 
@@ -132,10 +133,10 @@ int main(int argc, char *argv[])
     spi_set_enable(&spi_host_flash, true);
     spi_output_enable(&spi_host_flash, true);
 
-    dma_t dma;
     dma.base_addr = mmio_region_from_addr((uintptr_t)DMA_START_ADDRESS);
 
     uint16_t clk_div = 0;
+
     if (FLASH_CLK_MAX_HZ < core_clk / 2)
     {
         clk_div = (core_clk / (FLASH_CLK_MAX_HZ)-2) / 2;
@@ -175,6 +176,11 @@ int main(int argc, char *argv[])
     });
     spi_set_command(&spi_host_flash, cmd_set_dummy);
     spi_wait_for_ready(&spi_host_flash);
+}
+
+int main(int argc, char *argv[])
+{
+    vadc_init();
 
     uint32_t results[32];
     for(uint32_t i = 0; i < 32; i++){
@@ -184,7 +190,7 @@ int main(int argc, char *argv[])
     read_from_flash(&spi_host_flash, &dma, results, 4 * 32, FLASH_ADDR);
 
     for(uint32_t i = 0; i < 32; i++){
-        printf("%d: 0x%08X\n\r", i, (unsigned int)results[i]);
+        printf("%02d, ", (unsigned int)results[i]);
     }
 
     return EXIT_SUCCESS;
