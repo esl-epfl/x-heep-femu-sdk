@@ -26,9 +26,11 @@ cd /home/xilinx/x-heep-femu-sdk/sw/arm/tools/gdb
 if [ $# -eq 0 ]
 then
 	sudo ./run_gdb.sh all > /dev/null 2>&1
+	res=$?
 elif [ $1 = "debug" ]
 then
 	sudo ./run_gdb.sh debug
+	res=$?
 else
 	echo "Wrong parameter!"
 fi
@@ -40,8 +42,5 @@ sudo screen -X -S openocd quit
 
 # Quit UART
 sudo screen -X -S uart quit
-echo
-echo "--- APPLICATION OUTPUT ---"
-echo
 cat /home/xilinx/x-heep-femu-sdk/sw/riscv/build/stdout.txt
-echo
+exit $res

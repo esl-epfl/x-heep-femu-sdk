@@ -10,6 +10,7 @@ from pynq import allocate
 import os
 import sys
 import csv
+import subprocess
 
 ADC_OFFSET = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43C00000
@@ -32,15 +33,42 @@ class x_heep(Overlay):
 
 
     def compile_app(self, app_name):
+        try:
+            # Run the command and capture the output
+            result = subprocess.run("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/compile_app.sh " + app_name,
+                                     shell=True,
+                                     check=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     text=True)
+            output = result.stdout
+            error_output = result.stderr
+            if error_output != "":
+                print("Error:\n", output, "\n", error_output)
+                return False
+            else:
+                print("✅ Compile success")
+                return True
 
-        # Compile application
-        os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/compile_app.sh " + app_name)
+        except subprocess.CalledProcessError as e:
+            # Handle errors raised by the command
+            print("Command failed with return code", e.returncode, "and error output:", e.stderr)
 
 
     def run_app(self):
+        # Run the command and capture the output
+        result = subprocess.run("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh",
+                                    shell=True,
+                                    check=False, # Will not raise an exception is return code is != 0
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    text=True)
+        output = result.stdout
+        error_output = result.stderr
+        if result.returncode != 0: print("❌ Return FAILED:",result.returncode,"\n", error_output, output)
+        else: print("✅ Return SUCCESS\n", output)
+        return output, error_output
 
-        # Run application
-        os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh")
 
 
     def run_app_debug(self):

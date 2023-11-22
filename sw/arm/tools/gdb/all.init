@@ -9,6 +9,7 @@ set confirm off
 monitor reset init
 load /home/xilinx/x-heep-femu-sdk/sw/riscv/build/code.elf
 file /home/xilinx/x-heep-femu-sdk/sw/riscv/build/code.elf
-b _end
-c
+b _exit
+run
+print $a0
 quit
