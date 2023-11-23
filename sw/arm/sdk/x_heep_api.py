@@ -47,7 +47,7 @@ class x_heep(Overlay):
                 print("Error:\n", output, "\n", error_output)
                 return False
             else:
-                print("✅ Compile success")
+                print("✅ Compile SUCCESS")
                 return True
 
         except subprocess.CalledProcessError as e:
