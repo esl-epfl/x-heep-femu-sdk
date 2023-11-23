@@ -11,6 +11,6 @@
 
 int main(int argc, char *argv[])
 {
-    printf("Hello World from Juan!\n\r");
+    printf("Hello World!\n\r");
     return EXIT_SUCCESS;
 }
