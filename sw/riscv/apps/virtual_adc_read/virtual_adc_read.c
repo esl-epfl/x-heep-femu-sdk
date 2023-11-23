@@ -189,8 +189,9 @@ int main(int argc, char *argv[])
 
     read_from_flash(&spi_host_flash, &dma, results, 4 * 32, FLASH_ADDR);
 
-    for(uint32_t i = 0; i < 32; i++){
-        printf("%02d, ", (unsigned int)results[i]);
+    for(uint32_t i = 1; i < 32; i++){
+        printf("%02d\n", (unsigned int)results[i] - (unsigned int)results[i-1] );
+        for(uint32_t j = 0; j < 500000; j++){ asm volatile ("nop"); }
     }
 
     return EXIT_SUCCESS;

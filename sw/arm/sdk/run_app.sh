@@ -6,15 +6,6 @@
 
 #!/bin/bash
 
-# Quit screen sessions
-pkill screen
-sudo pkill screen
-
-# Run UART
-cd /home/xilinx/x-heep-femu-sdk/sw/arm/tools/uart/
-sudo ./run_uart.sh
-cd - > /dev/null 2>&1
-
 # Run OpenOCD
 cd /home/xilinx/x-heep-femu-sdk/sw/arm/tools/openocd
 sudo ./run_openocd.sh
@@ -40,7 +31,4 @@ cd - > /dev/null 2>&1
 # Quit OpenOCD
 sudo screen -X -S openocd quit
 
-# Quit UART
-sudo screen -X -S uart quit
-cat /home/xilinx/x-heep-femu-sdk/sw/riscv/build/stdout.txt
 exit $res
