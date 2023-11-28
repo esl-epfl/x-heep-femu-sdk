@@ -71,26 +71,24 @@ class x_heep(Overlay):
         else: print("✅ Return SUCCESS\n", output)
         return output, error_output
 
-    def thread_process_uart_read(self, stop_event):
+    def thread_process_uart_read(self, stop_event, verbose):
         # Background thread reading the input from the UART
         serialPort = serial.Serial(port = "/dev/ttyPS1", baudrate=115200, bytesize=8, timeout=2, stopbits=serial.STOPBITS_ONE)
         self.uart_data = []
         while not stop_event.is_set():
             line = serialPort.readline().decode('utf-8')
             if line != "":
-                print(line, end="")
+                if verbose: print(line, end="")
                 self.uart_data.append(line)
 
     def thread_start(self, verbose):
-        if not verbose: return None, None
         stop_flag = threading.Event()   # Create a stop flag to halt the process later
         # Create the thread running the selected process
-        thread = threading.Thread( target=self.thread_process_uart_read,  args=(stop_flag,) )
+        thread = threading.Thread( target=self.thread_process_uart_read,  args=(stop_flag, verbose) )
         thread.start() # Launch the thread
         return thread, stop_flag
 
     def thread_stop(self, thread, stop_flag ):
-        if thread == None: return
         stop_flag.set() # Set the stop flag to stop the thread
         thread.join()   # Wait for the thread to finish
 

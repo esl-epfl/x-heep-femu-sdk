@@ -1,1 +1,1 @@
-#define INPUT_DATA_LENGTH 800 
+#define INPUT_DATA_LENGTH 200 
