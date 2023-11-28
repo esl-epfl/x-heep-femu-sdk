@@ -336,7 +336,6 @@ def lcadc_reconstruct_time(series):
     o.time.append(series.time[0])
     o.time.append(series.time[0])
     o.time.append(series.time[0])
-    print(series.time[0])
     o.data.append(0)
     o.data.append(0)
     o.data.append(0)

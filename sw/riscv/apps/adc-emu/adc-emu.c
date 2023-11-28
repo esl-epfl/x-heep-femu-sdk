@@ -30,6 +30,12 @@
 #define FLASH_ADDR 0x00000000
 #define FLASH_CLK_MAX_HZ (133 * 1000 * 1000)
 
+#if ENABLE_PRINTF
+    #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
+#else
+    #define PRINTF(...)
+#endif
+
 volatile int8_t dma_intr_flag;
 
 spi_host_t spi_host_flash;
@@ -184,17 +190,27 @@ int main(int argc, char *argv[])
 {
     vadc_init();
 
-    uint32_t results[INPUT_DATA_LENGTH];
+    uint32_t data[INPUT_DATA_LENGTH];
     for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
-        results[i] = 0;
+        data[i] = 0;
     }
 
-    read_from_flash(&spi_host_flash, &dma, results, 4 * INPUT_DATA_LENGTH, FLASH_ADDR);
+    read_from_flash(&spi_host_flash, &dma, data, 4 * INPUT_DATA_LENGTH, FLASH_ADDR);
 
-    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
-        // printf("%02d\n", (unsigned int)results[i] - (unsigned int)results[i-1] );
-        printf("%02d\n", (int32_t)results[i] );
-        for(uint32_t j = 0; j < 5000; j++){ asm volatile ("nop"); }
+    uint8_t bits = 4;
+    uint32_t m  = data[0];
+    uint32_t mb = m << bits;
+    uint32_t x = 0;
+    uint32_t h = 0;
+    uint32_t l = m;
+    for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
+        x = data[i];        // The current value to compute the mean
+        mb -= m;            // 4*mean without the last value
+        mb += x;            // 4*mean with the new value
+        m = mb >> bits;     // The new mean (4*mean/4)
+        h = l - m;          // The new HPFd value (signal - mean)
+        l = x;              // The value of data[i-1] for the next iteration
+        PRINTF("%02d | %02d\n", m, h );
     }
 
     return EXIT_SUCCESS;

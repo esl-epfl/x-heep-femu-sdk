@@ -23,8 +23,6 @@ def add_step(series, alpha=1):
     print(f'Samples \t {len(series.time)} \t {series}')
     ax.plot(series.time, series.data, alpha = alpha )
     processes.append(series)
-    series.export()
-    series.export_bin()
     series.dump()
 
 

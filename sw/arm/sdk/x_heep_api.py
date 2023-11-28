@@ -92,6 +92,19 @@ class x_heep(Overlay):
         stop_flag.set() # Set the stop flag to stop the thread
         thread.join()   # Wait for the thread to finish
 
+
+    def open_definitions(self, filename, tag):
+        with open( filename, 'w+') as f:
+            f.write(f"#ifndef _{tag.upper()}_H\n#define _{tag.upper()}_H\n\n")
+
+    def close_definitions(self, filename):
+        with open( filename, 'a') as f:
+            f.write("#endif")
+
+    def add_definition(self, filename, alias, value):
+        with open( filename, 'a') as f:
+            f.write(f"#define {alias} {value}\n")
+
     def run_app_debug(self):
 
         # Debug application (no Jupyter support)

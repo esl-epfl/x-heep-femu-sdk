@@ -1,1 +1,6 @@
-#define INPUT_DATA_LENGTH 200 
+#ifndef _DEFINITIONS_H
+#define _DEFINITIONS_H
+
+#define INPUT_DATA_LENGTH 718
+#define ENABLE_PRINTF 1
+#endif
