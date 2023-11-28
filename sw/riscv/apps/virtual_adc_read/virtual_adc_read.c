@@ -24,6 +24,8 @@
 #include "gpio.h"
 #include "fast_intr_ctrl_regs.h"
 
+#include "definitions.h"
+
 #define REVERT_24b_ADDR(addr) ((((uint32_t)addr & 0xff0000) >> 16) | ((uint32_t)addr & 0xff00) | (((uint32_t)addr & 0xff) << 16))
 #define FLASH_ADDR 0x00000000
 #define FLASH_CLK_MAX_HZ (133 * 1000 * 1000)
@@ -182,15 +184,16 @@ int main(int argc, char *argv[])
 {
     vadc_init();
 
-    uint32_t results[32];
-    for(uint32_t i = 0; i < 32; i++){
+    uint32_t results[INPUT_DATA_LENGTH];
+    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
         results[i] = 0;
     }
 
-    read_from_flash(&spi_host_flash, &dma, results, 4 * 32, FLASH_ADDR);
+    read_from_flash(&spi_host_flash, &dma, results, 4 * INPUT_DATA_LENGTH, FLASH_ADDR);
 
-    for(uint32_t i = 1; i < 32; i++){
-        printf("%02d\n", (unsigned int)results[i] - (unsigned int)results[i-1] );
+    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
+        // printf("%02d\n", (unsigned int)results[i] - (unsigned int)results[i-1] );
+        printf("%02d\n", (uint32_t)results[i] );
         for(uint32_t j = 0; j < 500000; j++){ asm volatile ("nop"); }
     }
 
