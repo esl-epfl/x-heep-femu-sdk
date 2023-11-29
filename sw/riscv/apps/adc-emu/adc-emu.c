@@ -41,6 +41,10 @@ volatile int8_t dma_intr_flag;
 spi_host_t spi_host_flash;
 soc_ctrl_t soc_ctrl;
 dma_t dma;
+gpio_params_t gpio_params;
+gpio_t gpio;
+gpio_result_t gpio_res;
+
 
 void handler_irq_fast_dma(void)
 {
@@ -186,8 +190,22 @@ void vadc_init()
     spi_wait_for_ready(&spi_host_flash);
 }
 
+static inline void perf_start(){
+    gpio_params.base_addr = mmio_region_from_addr((uintptr_t)GPIO_AO_START_ADDRESS);
+    gpio_res = gpio_init(gpio_params, &gpio);
+
+    gpio_res = gpio_output_set_enabled(&gpio, 1, true);
+    gpio_write(&gpio, 1, true);
+}
+
+static inline void perf_stop(){
+    gpio_write(&gpio, 1, false);
+}
+
 int main(int argc, char *argv[])
 {
+    perf_start();
+
     vadc_init();
 
     uint32_t data[INPUT_DATA_LENGTH];
@@ -213,6 +231,8 @@ int main(int argc, char *argv[])
         PRINTF("%02d | %02d\n", m, h );
     }
 
+
+    perf_stop();
     return EXIT_SUCCESS;
 
 }
