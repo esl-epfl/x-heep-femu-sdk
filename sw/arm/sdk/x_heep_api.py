@@ -12,21 +12,29 @@ import sys
 import csv
 
 ADC_OFFSET = 0x40000000
-FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43C00000
-PERFORMANCE_COUNTERS_OFFSET = 0x43C10000
+FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43c00000
+#PERFORMANCE_COUNTERS_OFFSET = 0x43C10000
+OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43c10000
+PERFORMANCE_COUNTERS_OFFSET = 0x43c20000
 
 class x_heep(Overlay):
 
-    def __init__(self, **kwargs):
+    def __init__(self, ILA_debug = False, **kwargs):
 
         # Load bitstream
-        super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
+        if not ILA_debug:
+            super().__init__("/home/xilinx/x_heep/hw/x_heep.bit", **kwargs)
+        else:
+            """
+            When debugging with ILA, you first need to program the FPGA with base.bit, then program it again from the Vivado with the desired bitstream file. For this, set ILA_debug = True when debugging and initializing the x_heep class in Python.
+            """
+            super().__init__("base.bit", **kwargs)
 
 
     def load_bitstream(self):
 
         # Load bitstream
-        x_heep = Overlay("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit")
+        x_heep = Overlay("/home/xilinx/x_heep/hw/x_heep.bit")
 
         return x_heep
 
@@ -34,19 +42,19 @@ class x_heep(Overlay):
     def compile_app(self, app_name):
 
         # Compile application
-        os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/compile_app.sh " + app_name)
+        os.system("/home/xilinx/x_heep/sw/arm/sdk/compile_app.sh " + app_name)
 
 
     def run_app(self):
 
         # Run application
-        os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh")
+        os.system("/home/xilinx/x_heep/sw/arm/sdk/run_app.sh")
 
 
     def run_app_debug(self):
 
         # Debug application (no Jupyter support)
-        os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh debug")
+        os.system("/home/xilinx/x_heep/sw/arm/sdk/run_app.sh debug")
 
 
     def init_flash(self):
@@ -62,6 +70,24 @@ class x_heep(Overlay):
         flash[:] = 0
 
         return flash
+    
+    def init_obi(self):
+
+        # Allocate OBI Memory
+        obi = allocate(shape=(1024,)) #32768 -> old value
+
+        # Write Flash base address to AXI address adder
+        axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        axi_address_adder.write(0x0, obi.physical_address)
+        
+        #Test: Check if the value written and read from the register is the same or not.
+        #result = axi_address_adder.read(0x0)
+        #print(obi.physical_address == result)
+
+        # Reset Flash
+        obi[:] = 0
+
+        return obi
 
 
     def reset_flash(self, flash):
@@ -69,24 +95,39 @@ class x_heep(Overlay):
         # Reset Flash
         flash[:] = 0
 
+    def reset_obi(self, obi):
+
+        # Reset OBI
+        obi[:] = 0
+
 
     def write_flash(self, flash):
 
         # Write Flash from binary file
-        file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/flash_in.bin", mode="rb")
+        file = open("/home/xilinx/x_heep/sw/riscv/build/flash_in.bin", mode="rb")
         file_byte = file.read()
         for i in range(int(len(file_byte)/4)):
             flash[i] = (file_byte[i*4+3] << 24) | (file_byte[i*4+2] << 16) | (file_byte[i*4+1] << 8) | file_byte[i*4];
         file.close()
 
+    def write_obi_memory(self, write_list, obi):
+
+        #Write to the memory space allocated for OBI applications a test case
+        obi[:] = write_list
+
 
     def read_flash(self, flash):
 
         # Read Flash to binary file
-        file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/flash_out.bin", mode="wb")
+        file = open("/home/xilinx/x_heep/sw/riscv/build/flash_out.bin", mode="wb")
         byte_array = bytearray(flash)
         file.write(byte_array)
         file.close()
+        
+    def read_obi(self, obi):
+        
+        print(obi)
+        return list(obi)
 
 
     def init_adc_mem(self):
@@ -111,7 +152,7 @@ class x_heep(Overlay):
     def write_adc_mem(self, adc_mem):
 
         # Write ADC memory from binary file
-        file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/adc_in.bin", mode="rb")
+        file = open("/home/xilinx/x_heep/sw/riscv/build/adc_in.bin", mode="rb")
         file_byte = file.read()
         for i in range(int(len(file_byte)/4)):
             adc_mem.write(i*4, (file_byte[i*4+3] << 24) | (file_byte[i*4+2] << 16) | (file_byte[i*4+1] << 8) | file_byte[i*4])
@@ -121,7 +162,7 @@ class x_heep(Overlay):
     def read_adc_mem(self, adc_mem):
 
         # Read ADC memory to binary file
-        file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/adc_out.bin", mode="wb")
+        file = open("/home/xilinx/x_heep/sw/riscv/build/adc_out.bin", mode="wb")
         for i in range(2048):
             file.write(adc_mem.read(i*4).to_bytes(4, 'little'))
         file.close()
@@ -167,7 +208,7 @@ class x_heep(Overlay):
     def read_perf_cnt(self, perf_cnt):
 
         # Save performance counters to CSV file
-        with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/perf_cnt.csv', mode='w') as perf_cnt_file:
+        with open('/home/xilinx/x_heep/sw/riscv/build/perf_cnt.csv', mode='w') as perf_cnt_file:
             perf_cnt_writer = csv.writer(perf_cnt_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             perf_cnt_writer.writerow(['module', '', '',                        'active cycles',        'clock-gate cycles',        'power-gate cycles',         'retentive cycles', ''])
@@ -205,13 +246,13 @@ class x_heep(Overlay):
 
     def estimate_performance(self):
 
-        with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/perf_cnt.csv') as perf_cnt_file:
+        with open('/home/xilinx/x_heep/sw/riscv/build/perf_cnt.csv') as perf_cnt_file:
             perf_cnt_reader = csv.reader(perf_cnt_file, delimiter=',')
             perf_cnt = []
             for row in perf_cnt_reader:
                 perf_cnt.append(row)
 
-            with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/perf_estim.csv', mode='w') as perf_estim_file:
+            with open('/home/xilinx/x_heep/sw/riscv/build/perf_estim.csv', mode='w') as perf_estim_file:
                 perf_estim_writer = csv.writer(perf_estim_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                 # Save performance estimation to CSV file
@@ -389,13 +430,13 @@ class x_heep(Overlay):
 
     def estimate_energy(self, cells):
 
-        with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/pwr_val/TSMC_65nm_' + cells + '_20MHz.csv') as power_values_file:
+        with open('/home/xilinx/x_heep/sw/riscv/pwr_val/TSMC_65nm_' + cells + '_20MHz.csv') as power_values_file:
             power_values_reader = csv.reader(power_values_file, delimiter=',')
             power_values = []
             for row in power_values_reader:
                 power_values.append(row)
 
-            with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/perf_estim.csv') as perf_estim_file:
+            with open('/home/xilinx/x_heep/sw/riscv/build/perf_estim.csv') as perf_estim_file:
                 perf_estim_reader = csv.reader(perf_estim_file, delimiter=',')
                 perf_estim = []
                 for row in perf_estim_reader:
@@ -427,7 +468,7 @@ class x_heep(Overlay):
                             \
                             ( float(power_values[28][5])  *  float(perf_estim[28][7]) )
 
-                with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/energy_estim.csv', mode='w') as energy_estim_file:
+                with open('/home/xilinx/x_heep/sw/riscv/build/energy_estim.csv', mode='w') as energy_estim_file:
                     energy_estim_writer = csv.writer(energy_estim_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
                     # Save energy estimation to CSV file
