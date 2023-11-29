@@ -217,6 +217,7 @@ static inline void lpf_hpf(){
     uint32_t x = 0;
     uint32_t h = 0;
     uint32_t l = m;
+    PRINTF("# LPF | HPF\n");
     for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
         x = data[i];        // The current value to compute the mean
         mb -= m;            // 4*mean without the last value
@@ -226,9 +227,17 @@ static inline void lpf_hpf(){
         l = x;              // The value of data[i-1] for the next iteration
         PRINTF("%02d | %02d\n", m, h );
     }
+    PRINTF("$---\n");
 }
 
+void some_other(){
+    PRINTF("# some | other | stuff\n");
+    for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
+        PRINTF("%02d | %02d | %03d\n", i, i+1, i*2 );
+    }
+    PRINTF("$---\n");
 
+}
 
 
 
