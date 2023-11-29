@@ -265,7 +265,7 @@ class x_heep(Overlay):
             perf_cnt_file.close()
 
 
-    def estimate_performance(self):
+    def estimate_performance(self, verbose):
 
         with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/perf_cnt.csv') as perf_cnt_file:
             perf_cnt_reader = csv.reader(perf_cnt_file, delimiter=',')
@@ -308,148 +308,149 @@ class x_heep(Overlay):
                 perf_estim_writer.writerow(['Total time', '', '', '', '', '', '', float(int(perf_cnt[28][7], base=16)*float(0.00000005))])
 
                 # Print performance estimation to stdout
-                print("\n--- PERFORMANCE ESTIMATION AT 20MHz ---\n")
+                if verbose:
+                    print("\n--- PERFORMANCE ESTIMATION AT 20MHz ---\n")
 
-                print("total time:                 %Es\n"    % (float(int(perf_cnt[28][7], base=16)*float(0.00000005))))
+                    print("total time:                 %Es\n"    % (float(int(perf_cnt[28][7], base=16)*float(0.00000005))))
 
-                print("x-heep\n")
+                    print("x-heep\n")
 
-                print("    cpu\n")
+                    print("    cpu\n")
 
-                print("     - active time:         %Es"      % (float(int(perf_cnt[2][3], base=16)*float(0.00000005))))
-                print("     - clock-gate time:     %Es"      % (float(int(perf_cnt[2][4], base=16)*float(0.00000005))))
-                print("     - power-gate time:     %Es\n"    % (float(int(perf_cnt[2][5], base=16)*float(0.00000005))))
+                    print("     - active time:         %Es"      % (float(int(perf_cnt[2][3], base=16)*float(0.00000005))))
+                    print("     - clock-gate time:     %Es"      % (float(int(perf_cnt[2][4], base=16)*float(0.00000005))))
+                    print("     - power-gate time:     %Es\n"    % (float(int(perf_cnt[2][5], base=16)*float(0.00000005))))
 
-                print("    bus ao\n")
+                    print("    bus ao\n")
 
-                print("     - active time:         %Es"      % (float(int(perf_cnt[3][3], base=16)*float(0.00000005))))
-                print("     - clock-gate time:     %Es\n"    % (float(int(perf_cnt[3][4], base=16)*float(0.00000005))))
+                    print("     - active time:         %Es"      % (float(int(perf_cnt[3][3], base=16)*float(0.00000005))))
+                    print("     - clock-gate time:     %Es\n"    % (float(int(perf_cnt[3][4], base=16)*float(0.00000005))))
 
-                print("    debug ao\n")
+                    print("    debug ao\n")
 
-                print("     - active time:         %Es"      % (float(int(perf_cnt[4][3], base=16)*float(0.00000005))))
-                print("     - clock-gate time:     %Es\n"    % (float(int(perf_cnt[4][4], base=16)*float(0.00000005))))
+                    print("     - active time:         %Es"      % (float(int(perf_cnt[4][3], base=16)*float(0.00000005))))
+                    print("     - clock-gate time:     %Es\n"    % (float(int(perf_cnt[4][4], base=16)*float(0.00000005))))
 
-                print("    always-on peripheral subsystem\n")
+                    print("    always-on peripheral subsystem\n")
 
-                print("        soc ctrl ao\n")
+                    print("        soc ctrl ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[6][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[6][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[6][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[6][4], base=16)*float(0.00000005))))
 
-                print("        boot rom ao\n")
+                    print("        boot rom ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[7][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[7][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[7][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[7][4], base=16)*float(0.00000005))))
 
-                print("        spi flash ao\n")
+                    print("        spi flash ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[8][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[8][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[8][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[8][4], base=16)*float(0.00000005))))
 
-                print("        spi ao\n")
+                    print("        spi ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[9][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[9][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[9][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[9][4], base=16)*float(0.00000005))))
 
-                print("        power manager ao\n")
+                    print("        power manager ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[10][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[10][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[10][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[10][4], base=16)*float(0.00000005))))
 
-                print("        timer ao\n")
+                    print("        timer ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[11][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[11][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[11][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[11][4], base=16)*float(0.00000005))))
 
-                print("        dma ao\n")
+                    print("        dma ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[12][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[12][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[12][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[12][4], base=16)*float(0.00000005))))
 
-                print("        fast int ctrl ao\n")
+                    print("        fast int ctrl ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[13][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[13][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[13][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[13][4], base=16)*float(0.00000005))))
 
-                print("        gpio ao\n")
+                    print("        gpio ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[14][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[14][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[14][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[14][4], base=16)*float(0.00000005))))
 
-                print("        uart ao\n")
+                    print("        uart ao\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[15][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[15][4], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[15][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es\n"    % (float(int(perf_cnt[15][4], base=16)*float(0.00000005))))
 
-                print("    peripheral subsystem\n")
+                    print("    peripheral subsystem\n")
 
-                print("        plic\n")
+                    print("        plic\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[17][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[17][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[17][5], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[17][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[17][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[17][5], base=16)*float(0.00000005))))
 
-                print("        gpio\n")
+                    print("        gpio\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[18][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[18][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[18][5], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[18][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[18][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[18][5], base=16)*float(0.00000005))))
 
-                print("        i2c\n")
+                    print("        i2c\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[19][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[19][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[19][5], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[19][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[19][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[19][5], base=16)*float(0.00000005))))
 
-                print("        timer\n")
+                    print("        timer\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[20][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[20][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[20][5], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[20][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[20][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[20][5], base=16)*float(0.00000005))))
 
-                print("        spi\n")
+                    print("        spi\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[21][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[21][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[21][5], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[21][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[21][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es\n"    % (float(int(perf_cnt[21][5], base=16)*float(0.00000005))))
 
-                print("    memory subsystem\n")
+                    print("    memory subsystem\n")
 
-                print("        ram bank 0\n")
+                    print("        ram bank 0\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[23][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[23][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es"      % (float(int(perf_cnt[23][5], base=16)*float(0.00000005))))
-                print("         - retentive time:  %Es\n"    % (float(int(perf_cnt[23][6], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[23][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[23][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es"      % (float(int(perf_cnt[23][5], base=16)*float(0.00000005))))
+                    print("         - retentive time:  %Es\n"    % (float(int(perf_cnt[23][6], base=16)*float(0.00000005))))
 
-                print("        ram bank 1\n")
+                    print("        ram bank 1\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[24][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[24][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es"      % (float(int(perf_cnt[24][5], base=16)*float(0.00000005))))
-                print("         - retentive time:  %Es\n"    % (float(int(perf_cnt[24][6], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[24][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[24][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es"      % (float(int(perf_cnt[24][5], base=16)*float(0.00000005))))
+                    print("         - retentive time:  %Es\n"    % (float(int(perf_cnt[24][6], base=16)*float(0.00000005))))
 
-                print("        ram bank 2\n")
+                    print("        ram bank 2\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[25][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[25][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es"      % (float(int(perf_cnt[25][5], base=16)*float(0.00000005))))
-                print("         - retentive time:  %Es\n"    % (float(int(perf_cnt[25][6], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[25][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[25][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es"      % (float(int(perf_cnt[25][5], base=16)*float(0.00000005))))
+                    print("         - retentive time:  %Es\n"    % (float(int(perf_cnt[25][6], base=16)*float(0.00000005))))
 
-                print("        ram bank 3\n")
+                    print("        ram bank 3\n")
 
-                print("         - active time:     %Es"      % (float(int(perf_cnt[26][3], base=16)*float(0.00000005))))
-                print("         - clock-gate time: %Es"      % (float(int(perf_cnt[26][4], base=16)*float(0.00000005))))
-                print("         - power-gate time: %Es"      % (float(int(perf_cnt[26][5], base=16)*float(0.00000005))))
-                print("         - retentive time:  %Es"      % (float(int(perf_cnt[26][6], base=16)*float(0.00000005))))
+                    print("         - active time:     %Es"      % (float(int(perf_cnt[26][3], base=16)*float(0.00000005))))
+                    print("         - clock-gate time: %Es"      % (float(int(perf_cnt[26][4], base=16)*float(0.00000005))))
+                    print("         - power-gate time: %Es"      % (float(int(perf_cnt[26][5], base=16)*float(0.00000005))))
+                    print("         - retentive time:  %Es"      % (float(int(perf_cnt[26][6], base=16)*float(0.00000005))))
 
                 perf_estim_file.close()
 
             perf_cnt_file.close()
 
 
-    def estimate_energy(self, cells):
+    def estimate_energy(self, cells, verbose):
 
         with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/pwr_val/TSMC_65nm_' + cells + '_20MHz.csv') as power_values_file:
             power_values_reader = csv.reader(power_values_file, delimiter=',')
@@ -523,142 +524,143 @@ class x_heep(Overlay):
                     energy_estim_writer.writerow(['', '', '', '', '', '', '', ''])
                     energy_estim_writer.writerow(['Total energy', '', '', '', '', '', '', energy])
 
-                    # Print energy estimation to stdout
-                    print("\n--- ENERGY ESTIMATION AT 20MHz ---\n")
+                    if verbose:
+                        # Print energy estimation to stdout
+                        print("\n--- ENERGY ESTIMATION AT 20MHz ---\n")
 
-                    print("total energy:                 %EJ\n"    % (energy))
+                        print("total energy:                 %EJ\n"    % (energy))
 
-                    print("x-heep\n")
+                        print("x-heep\n")
 
-                    print("    cpu\n")
+                        print("    cpu\n")
 
-                    print("     - active energy:         %EJ"      % (float(power_values[2][5])*float(perf_estim[2][3])))
-                    print("     - clock-gate energy:     %EJ"      % (float(power_values[2][3])*float(perf_estim[2][4])))
-                    print("     - power-gate energy:     %EJ\n"    % (0*float(perf_estim[2][3])))
+                        print("     - active energy:         %EJ"      % (float(power_values[2][5])*float(perf_estim[2][3])))
+                        print("     - clock-gate energy:     %EJ"      % (float(power_values[2][3])*float(perf_estim[2][4])))
+                        print("     - power-gate energy:     %EJ\n"    % (0*float(perf_estim[2][3])))
 
-                    print("    bus ao\n")
+                        print("    bus ao\n")
 
-                    print("     - active energy:         %EJ"      % (float(power_values[3][5])*float(perf_estim[3][3])))
-                    print("     - clock-gate energy:     %EJ\n"    % (float(power_values[3][3])*float(perf_estim[3][4])))
+                        print("     - active energy:         %EJ"      % (float(power_values[3][5])*float(perf_estim[3][3])))
+                        print("     - clock-gate energy:     %EJ\n"    % (float(power_values[3][3])*float(perf_estim[3][4])))
 
-                    print("    debug ao\n")
+                        print("    debug ao\n")
 
-                    print("     - active energy:         %EJ"      % (float(power_values[4][5])*float(perf_estim[4][3])))
-                    print("     - clock-gate energy:     %EJ\n"    % (float(power_values[4][3])*float(perf_estim[4][4])))
+                        print("     - active energy:         %EJ"      % (float(power_values[4][5])*float(perf_estim[4][3])))
+                        print("     - clock-gate energy:     %EJ\n"    % (float(power_values[4][3])*float(perf_estim[4][4])))
 
-                    print("    always-on peripheral subsystem\n")
+                        print("    always-on peripheral subsystem\n")
 
-                    print("        soc ctrl ao\n")
+                        print("        soc ctrl ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[6][5])*float(perf_estim[6][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[6][3])*float(perf_estim[6][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[6][5])*float(perf_estim[6][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[6][3])*float(perf_estim[6][4])))
 
-                    print("        boot rom ao\n")
+                        print("        boot rom ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[7][5])*float(perf_estim[7][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[7][3])*float(perf_estim[7][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[7][5])*float(perf_estim[7][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[7][3])*float(perf_estim[7][4])))
 
-                    print("        spi flash ao\n")
+                        print("        spi flash ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[8][5])*float(perf_estim[8][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[8][3])*float(perf_estim[8][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[8][5])*float(perf_estim[8][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[8][3])*float(perf_estim[8][4])))
 
-                    print("        spi ao\n")
+                        print("        spi ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[9][5])*float(perf_estim[9][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[9][3])*float(perf_estim[9][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[9][5])*float(perf_estim[9][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[9][3])*float(perf_estim[9][4])))
 
-                    print("        power manager ao\n")
+                        print("        power manager ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[10][5])*float(perf_estim[10][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[10][3])*float(perf_estim[10][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[10][5])*float(perf_estim[10][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[10][3])*float(perf_estim[10][4])))
 
-                    print("        timer ao\n")
+                        print("        timer ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[11][5])*float(perf_estim[11][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[11][3])*float(perf_estim[11][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[11][5])*float(perf_estim[11][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[11][3])*float(perf_estim[11][4])))
 
-                    print("        dma ao\n")
+                        print("        dma ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[12][5])*float(perf_estim[12][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[12][3])*float(perf_estim[12][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[12][5])*float(perf_estim[12][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[12][3])*float(perf_estim[12][4])))
 
-                    print("        fast int ctrl ao\n")
+                        print("        fast int ctrl ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[13][5])*float(perf_estim[13][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[13][3])*float(perf_estim[13][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[13][5])*float(perf_estim[13][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[13][3])*float(perf_estim[13][4])))
 
-                    print("        gpio ao\n")
+                        print("        gpio ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[14][5])*float(perf_estim[14][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[14][3])*float(perf_estim[14][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[14][5])*float(perf_estim[14][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[14][3])*float(perf_estim[14][4])))
 
-                    print("        uart ao\n")
+                        print("        uart ao\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[15][5])*float(perf_estim[15][3])))
-                    print("         - clock-gate energy: %EJ\n"    % (float(power_values[15][3])*float(perf_estim[15][4])))
+                        print("         - active energy:     %EJ"      % (float(power_values[15][5])*float(perf_estim[15][3])))
+                        print("         - clock-gate energy: %EJ\n"    % (float(power_values[15][3])*float(perf_estim[15][4])))
 
-                    print("    peripheral subsystem\n")
+                        print("    peripheral subsystem\n")
 
-                    print("        plic\n")
+                        print("        plic\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[17][5])*float(perf_estim[17][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[17][3])*float(perf_estim[17][4])))
-                    print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[17][5])))
+                        print("         - active energy:     %EJ"      % (float(power_values[17][5])*float(perf_estim[17][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[17][3])*float(perf_estim[17][4])))
+                        print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[17][5])))
 
-                    print("        gpio\n")
+                        print("        gpio\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[18][5])*float(perf_estim[18][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[18][3])*float(perf_estim[18][4])))
-                    print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[18][5])))
+                        print("         - active energy:     %EJ"      % (float(power_values[18][5])*float(perf_estim[18][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[18][3])*float(perf_estim[18][4])))
+                        print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[18][5])))
 
-                    print("        i2c\n")
+                        print("        i2c\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[19][5])*float(perf_estim[19][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[19][3])*float(perf_estim[19][4])))
-                    print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[19][5])))
+                        print("         - active energy:     %EJ"      % (float(power_values[19][5])*float(perf_estim[19][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[19][3])*float(perf_estim[19][4])))
+                        print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[19][5])))
 
-                    print("        timer\n")
+                        print("        timer\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[20][5])*float(perf_estim[20][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[20][3])*float(perf_estim[20][4])))
-                    print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[20][5])))
+                        print("         - active energy:     %EJ"      % (float(power_values[20][5])*float(perf_estim[20][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[20][3])*float(perf_estim[20][4])))
+                        print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[20][5])))
 
-                    print("        spi\n")
+                        print("        spi\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[21][5])*float(perf_estim[21][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[21][3])*float(perf_estim[21][4])))
-                    print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[21][5])))
+                        print("         - active energy:     %EJ"      % (float(power_values[21][5])*float(perf_estim[21][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[21][3])*float(perf_estim[21][4])))
+                        print("         - power-gate energy: %EJ\n"    % (                         0*float(perf_estim[21][5])))
 
-                    print("    memory subsystem\n")
+                        print("    memory subsystem\n")
 
-                    print("        ram bank 0\n")
+                        print("        ram bank 0\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[23][5])*float(perf_estim[23][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[23][3])*float(perf_estim[23][4])))
-                    print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[23][5])))
-                    print("         - retentive energy:  %EJ\n"    % (float(power_values[23][6])*float(perf_estim[23][6])))
+                        print("         - active energy:     %EJ"      % (float(power_values[23][5])*float(perf_estim[23][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[23][3])*float(perf_estim[23][4])))
+                        print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[23][5])))
+                        print("         - retentive energy:  %EJ\n"    % (float(power_values[23][6])*float(perf_estim[23][6])))
 
-                    print("        ram bank 1\n")
+                        print("        ram bank 1\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[24][5])*float(perf_estim[24][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[24][3])*float(perf_estim[24][4])))
-                    print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[24][5])))
-                    print("         - retentive energy:  %EJ\n"    % (float(power_values[24][6])*float(perf_estim[24][6])))
+                        print("         - active energy:     %EJ"      % (float(power_values[24][5])*float(perf_estim[24][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[24][3])*float(perf_estim[24][4])))
+                        print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[24][5])))
+                        print("         - retentive energy:  %EJ\n"    % (float(power_values[24][6])*float(perf_estim[24][6])))
 
-                    print("        ram bank 2\n")
+                        print("        ram bank 2\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[25][5])*float(perf_estim[25][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[25][3])*float(perf_estim[25][4])))
-                    print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[25][5])))
-                    print("         - retentive energy:  %EJ\n"    % (float(power_values[25][6])*float(perf_estim[25][6])))
+                        print("         - active energy:     %EJ"      % (float(power_values[25][5])*float(perf_estim[25][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[25][3])*float(perf_estim[25][4])))
+                        print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[25][5])))
+                        print("         - retentive energy:  %EJ\n"    % (float(power_values[25][6])*float(perf_estim[25][6])))
 
-                    print("        ram bank 3\n")
+                        print("        ram bank 3\n")
 
-                    print("         - active energy:     %EJ"      % (float(power_values[26][5])*float(perf_estim[26][3])))
-                    print("         - clock-gate energy: %EJ"      % (float(power_values[26][3])*float(perf_estim[26][4])))
-                    print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[26][5])))
-                    print("         - retentive energy:  %EJ"      % (float(power_values[26][6])*float(perf_estim[26][6])))
+                        print("         - active energy:     %EJ"      % (float(power_values[26][5])*float(perf_estim[26][3])))
+                        print("         - clock-gate energy: %EJ"      % (float(power_values[26][3])*float(perf_estim[26][4])))
+                        print("         - power-gate energy: %EJ"      % (                         0*float(perf_estim[26][5])))
+                        print("         - retentive energy:  %EJ"      % (float(power_values[26][6])*float(perf_estim[26][6])))
 
                     energy_estim_file.close()
 

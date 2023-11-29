@@ -44,6 +44,7 @@ dma_t dma;
 gpio_params_t gpio_params;
 gpio_t gpio;
 gpio_result_t gpio_res;
+uint32_t data[INPUT_DATA_LENGTH];
 
 
 void handler_irq_fast_dma(void)
@@ -202,19 +203,14 @@ static inline void perf_stop(){
     gpio_write(&gpio, 1, false);
 }
 
-int main(int argc, char *argv[])
-{
-    perf_start();
-
-    vadc_init();
-
-    uint32_t data[INPUT_DATA_LENGTH];
-    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
-        data[i] = 0;
-    }
-
-    read_from_flash(&spi_host_flash, &dma, data, 4 * INPUT_DATA_LENGTH, FLASH_ADDR);
-
+/**
+ * This functions takes the data and returns two values:
+ * LPF | HPF
+ *
+ * LPF: The moving-mean of the signal with a sample window that is a power of 2.
+ * HPF: The original signal, subtracted the moving-mean.
+*/
+static inline void lpf_hpf(){
     uint8_t bits = 4;
     uint32_t m  = data[0];
     uint32_t mb = m << bits;
@@ -230,8 +226,25 @@ int main(int argc, char *argv[])
         l = x;              // The value of data[i-1] for the next iteration
         PRINTF("%02d | %02d\n", m, h );
     }
+}
 
 
+
+
+
+int main(int argc, char *argv[])
+{
+    // Start the performance counters to report timing and energy
+    perf_start();
+    vadc_init();
+
+    // Obtain the data (simulating obtaining a buffer from the ADC)
+    read_from_flash(&spi_host_flash, &dma, data, 4 * INPUT_DATA_LENGTH, FLASH_ADDR);
+
+    // Perform a LPF and HPF to the signal
+    lpf_hpf();
+
+    // Stop the performance counters.
     perf_stop();
     return EXIT_SUCCESS;
 
