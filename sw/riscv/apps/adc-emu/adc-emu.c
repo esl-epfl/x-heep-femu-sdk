@@ -217,7 +217,7 @@ static inline void lpf_hpf(){
     uint32_t x = 0;
     uint32_t h = 0;
     uint32_t l = m;
-    PRINTF("# LPF | HPF\n");
+    PRINTF("%sLPF %s HPF\n",OUTPUT_START_SEQ, OUTPUT_DIVIDER);
     for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
         x = data[i];        // The current value to compute the mean
         mb -= m;            // 4*mean without the last value
@@ -225,20 +225,10 @@ static inline void lpf_hpf(){
         m = mb >> bits;     // The new mean (4*mean/4)
         h = l - m;          // The new HPFd value (signal - mean)
         l = x;              // The value of data[i-1] for the next iteration
-        PRINTF("%02d | %02d\n", m, h );
+        PRINTF("%02d %s %02d\n", m, OUTPUT_DIVIDER, h );
     }
-    PRINTF("$---\n");
+    PRINTF("%s\n",OUTPUT_END_SEQ);
 }
-
-void some_other(){
-    PRINTF("# some | other | stuff\n");
-    for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
-        PRINTF("%02d | %02d | %03d\n", i, i+1, i*2 );
-    }
-    PRINTF("$---\n");
-
-}
-
 
 
 int main(int argc, char *argv[])

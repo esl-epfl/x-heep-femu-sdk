@@ -407,6 +407,9 @@ def spike_det_dt(series, threshold):
 def spike_det_lc(series, dt, count):
     o = Timeseries("sDETlc")
     i = count
+
+    print(">>", series.data[:10])
+
     data = [d for d in series.data if d != 0]
     time = [t for t,d in zip(series.time, series.data) if d != 0]
     for i in range(count, len(data)):

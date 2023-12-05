@@ -37,8 +37,8 @@ else:
 
 if demo:
     filename, time_s = BIOPAC, 60
-    filename, time_s = JACKSON, 2
     filename, time_s = EPIPHONE, 60
+    filename, time_s = JACKSON, 2
 
     EXTENSION = '.txt'
     figure, ax = plt.subplots(figsize=(10, 8))
@@ -61,7 +61,7 @@ if demo:
 
     ```````````````````````````````````````'''
 
-    if 1:
+    if 0:
         FROM_S  = 57
         TO_S    = 60
 
@@ -78,7 +78,7 @@ if demo:
 
     print(f"Initial sampling frequency:\t{f_Hz:.0f} Hz")
 
-    if 1:
+    if 0:
         f_Hz_new    = 200
         skip        = int( f_Hz/ f_Hz_new )
         f_Hz_new    = f_Hz/skip
@@ -103,7 +103,7 @@ if demo:
 
     ''' Normalize the data '''
     raw = norm(raw)
-    add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     '''```````````````````````````````````````
             MEAN SUBTRACTION
@@ -176,18 +176,18 @@ if demo:
     ''' Level-crosing with debouncing'''
     if filename == EPIPHONE :lvls = lvls_pwr2()
     if filename == BIOPAC :lvls = lvls_pwr2()
-    if filename == JACKSON : lvls = lvls_uniform_dense()
+    if filename == JACKSON : lvls = lvls_uniform()
 
     lc = lcadc_fil( analog, lvls )
     lcrt = lcadc_reconstruct_time(lc)
     add_step(lcrt,1)    #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     lcr = lcadc_reconstruct(lc, lvls)
-    # add_step(lcr, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # add_step(lcr, 0.7) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     ''' Through the PAS sub-sampler '''
     e = 1e3 # Biopac works better with 1e4
     pasd = pas(analog, e)
-    add_step(pasd, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # add_step(pasd, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     ''' Mean the LC '''
     lcr = pseudo_mean(lcr, 2)
@@ -198,7 +198,7 @@ if demo:
     if filename == EPIPHONE:    e = 5
     if filename == JACKSON:     e = 100
     pasd = pas(lcr, e)
-    add_step(pasd, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # add_step(pasd, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     '''```````````````````````````````````````
             SPIKE ENHANCEMENT
@@ -244,7 +244,7 @@ if demo:
 
     ```````````````````````````````````````'''
     counts = []
-    if 0:
+    if 1:
         try:
             ''' Ground truth '''
             SUFIX = '_spk'
@@ -257,14 +257,14 @@ if demo:
             [ plt.axvline(l, color='g', linestyle=':', alpha=0.5, linewidth=2  ) for l in g_truth ]
 
 
-            if 0:
+            if 1:
                 ''' Detection thorugh thresholding'''
                 lvl_offset = 1
                 mid = first_level(lvls)
                 th = lvls[mid+lvl_offset]
 
                 spk = spike_det_dt( as2o_nd, th )
-                # [ plt.axvline(l, color='r', linestyle=':', alpha=0.5  ) for l in spk.time ]
+                [ plt.axvline(l, color='r', linestyle=':', alpha=0.5  ) for l in spk.time ]
 
 
                 ''' Detection through LC counts'''
@@ -278,8 +278,8 @@ if demo:
                 foms = []
 
                 # These were the best results for one experiment
-                counts = [6]
-                dt_is = [20e-6]
+                counts = [5]
+                dt_is = [300e-6]
                 # counts = np.arange( 2,20, 1)
                 # dt_is = np.arange( 10e-6, 50e-6, 5e-6)
 
@@ -289,8 +289,7 @@ if demo:
                     foms_d = []
                     for dt_i in dt_is:
 
-                        spk = spike_det_lc( lcrt, dt_i*count, count )
-
+                        spk = spike_det_lc( lcrt, dt_i, count )
                         sens = 0
                         spec = 0
                         if len(spk.time) != 0:
@@ -340,7 +339,7 @@ if demo:
         if filename == BIOPAC:
             ax.set_xlim(50, 60)
         if filename == EPIPHONE:
-            ax.set_xlim(50, 60)
+            ax.set_xlim(57, 59)
         if filename == JACKSON:
             ax.set_xlim(0.75,0.775)
             # ax.set_xlim(0, 0.001)
