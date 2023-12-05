@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 from processes import *
 
-
+BITS_N = 8
+BITS_LC = 8
 
 # plt.ion()
 # plt.show()
@@ -36,9 +37,9 @@ else:
 
 
 if demo:
-    filename, time_s = BIOPAC, 60
-    filename, time_s = EPIPHONE, 60
     filename, time_s = JACKSON, 2
+    filename, time_s = EPIPHONE, 60
+    filename, time_s = BIOPAC, 60
 
     EXTENSION = '.txt'
     figure, ax = plt.subplots(figsize=(10, 8))
@@ -49,7 +50,7 @@ if demo:
     with open(filename+EXTENSION) as f:
         y = f.readlines()
 
-    data = [int(np.round(float(f))) for f in y]
+    data = np.asarray([int(np.round(float(f))) for f in y])
 
     s_n = len(data)
     T_s = time_s/s_n
@@ -98,12 +99,12 @@ if demo:
     raw = Timeseries('Raw')
     raw.data    = data
     raw.time    = time
-    raw.f_Hz     = f_Hz
+    raw.f_Hz    = f_Hz
     # add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     ''' Normalize the data '''
-    raw = norm(raw)
-    # add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    raw = norm(raw, BITS_N)
+    add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     '''```````````````````````````````````````
             MEAN SUBTRACTION
@@ -125,7 +126,7 @@ if demo:
     # add_step(meand, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     ''' Normalize the data '''
-    meand = norm(meand)
+    meand = norm(meand, BITS_N)
     add_step(meand, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -159,14 +160,14 @@ if demo:
     # lpfd = pm2s
     # add_step(lpfd, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    ''' Normalize the data '''
-    lpfd = norm(lpfd)
-    # add_step(lpfd, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
     '''```````````````````````````````````````
             SUBSAMPLING
 
     ```````````````````````````````````````'''
+
+    ''' Normalize the data for level crossing'''
+    lpfd = norm(lpfd, BITS_LC)
+    # add_step(lpfd, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     ''' Oversample to simulate analog signal '''
     analog = lpfd
@@ -212,11 +213,11 @@ if demo:
     if filename == BIOPAC:      win = 1
 
     as2od = as2o(pasd, win)
-    as2o_nd = norm(as2od)
+    as2o_nd = norm(as2od, BITS_N)
     # add_step(as2o_nd, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     as2od = needle(pasd, win)
-    as2o_nd = norm(as2od)
+    as2o_nd = norm(as2od, BITS_N)
     # add_step(as2o_nd, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
@@ -229,13 +230,13 @@ if demo:
 
     ''' Density of LC samples '''
     # esa = get_density(lc, 0.1)
-    # esa = norm(esa)
+    # esa = norm(esa, BITS_LC)
     # add_step(esa) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
     ''' ASO on LC samples '''
     # lcaso = lc_aso(lc, lvls)
-    # lcaso = norm(lcaso)
+    # lcaso = norm(lcaso, BITS_LC)
     # add_step(lcaso) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 

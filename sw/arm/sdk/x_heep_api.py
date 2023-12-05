@@ -104,9 +104,9 @@ class x_heep(Overlay):
     def add_definition(self, filename, alias, value):
         with open( filename, 'a') as f:
             if type(value) == int or type(value) == float:
-                f.write(f"#define {alias} {value}\n")
+                f.write(f"#define {alias} \t{value}\n")
             else:
-                f.write(f'#define {alias} "{value}"\n')
+                f.write(f'#define {alias} \t"{value}"\n')
 
 
     def run_app_debug(self):

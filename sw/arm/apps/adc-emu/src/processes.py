@@ -136,7 +136,7 @@ def lpf_butter(series, cutoff, order):
     o.time = series.time
     return o
 
-def norm(series):
+def norm(series, bits):
     o = Timeseries(series.name + " Norm")
     o.time = series.time
     o.f_Hz = series.f_Hz
@@ -144,12 +144,13 @@ def norm(series):
     sorted.sort()
     maxs = sorted[-10:]
     maxd = np.average(maxs)
+    max_val = int(2**bits/2 -1)
     for s in series.data:
-        d = 127*s/maxd
-        if d > 127:
-            d = 127
-        elif d < -127:
-            d = -127
+        d = max_val*s/maxd
+        if d > max_val:
+            d = max_val
+        elif d < -max_val:
+            d = -max_val
         o.data.append(d)
     return o
 

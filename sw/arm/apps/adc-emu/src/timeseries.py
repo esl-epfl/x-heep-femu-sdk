@@ -29,8 +29,10 @@ class Timeseries:
 
     def dump(self, path="../out/", name=""):
         if name == "": name = self.name.replace(" ", "_")
+        cop = self
+        cop.data = np.asarray(cop.data)
         with open( path + name + ".pkl", 'wb') as f:
-            pickle.dump( self, f )
+            pickle.dump( cop, f )
 
     @classmethod
     def load(cls, filename ):

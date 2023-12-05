@@ -211,7 +211,7 @@ static inline void perf_stop(){
  * HPF: The original signal, subtracted the moving-mean.
 */
 static inline void lpf_hpf(){
-    uint8_t bits = 4;
+    uint8_t bits = 5;
     uint32_t m  = data[0];
     uint32_t mb = m << bits;
     uint32_t x = 0;
