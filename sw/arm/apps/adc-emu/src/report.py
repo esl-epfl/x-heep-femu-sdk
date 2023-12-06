@@ -86,9 +86,9 @@ def report():
 
     # Generate a summary report and export it
     report = {
-        'Energy_J'    : BREAKDOWN[1]['Total'],
-        'Latency_s'   : BREAKDOWN[0]['Total'],
-        'Power_W'    : BREAKDOWN[1]['Total']/(BREAKDOWN[0]['Total']*ORDER[0])
+        'Energy_J'      : BREAKDOWN[1]['Total'],
+        'Latency_s'     : BREAKDOWN[0]['Total'],
+        'Power_W'       : BREAKDOWN[1]['Total']/(BREAKDOWN[0]['Total']*ORDER[0])
     }
 
     with open( SDK_PATH + RISCV_PATH + "build/report.pkl", 'wb') as f:
@@ -151,3 +151,20 @@ def plot_energy( modules, level=1, others_threshold=0.02):
     plt.gcf().set_size_inches(7, 7)
 
     plt.show()
+
+
+
+def remove_module(modules, element_name):
+    if "name" in modules and modules["name"] == element_name:
+        # Element found, subtract its total from the parent's total
+        parent_total = modules.get("Total", 0)
+        return {"Total": parent_total - modules.get("Total", 0)}
+
+    elif "submodules" in modules:
+        # Recursively search in submodules
+        modules["submodules"] = [remove_module(submodule, element_name) for submodule in modules.get("submodules", [])]
+
+        # Update the total based on the modified submodules
+        modules["Total"] = sum(submodule.get("Total", 0) for submodule in modules.get("submodules", []))
+
+    return modules
