@@ -37,9 +37,10 @@ else:
 
 
 if demo:
-    filename, time_s = JACKSON, 2
     filename, time_s = EPIPHONE, 60
     filename, time_s = BIOPAC, 60
+    filename, time_s = JACKSON, 2
+
 
     EXTENSION = '.txt'
     figure, ax = plt.subplots(figsize=(10, 8))
