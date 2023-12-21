@@ -25,7 +25,8 @@ class Timeseries:
         # Save the array to a binary file
         d_32 = np.array(self.data).astype(np.int32)
         with  open( path+name+".bin", 'wb') as f:
-            d_32.byteswap(True).tofile(f)
+            # d_32.byteswap(True).tofile(f)
+            d_32.tofile(f)
 
     def dump(self, path="../out/", name=""):
         if name == "": name = self.name.replace(" ", "_")

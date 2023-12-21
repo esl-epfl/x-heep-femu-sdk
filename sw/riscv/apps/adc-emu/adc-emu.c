@@ -57,72 +57,114 @@ void handler_irq_fast_dma(void)
 
 void read_from_flash(spi_host_t *SPI, dma_t *DMA, uint32_t *data, uint32_t byte_count, uint32_t addr)
 {
+    // Setting the DMA
+    uint32_t *fifo_ptr_rx = SPI->base_addr.base + SPI_HOST_RXDATA_REG_OFFSET;
+    dma_set_read_ptr_inc(DMA, (uint32_t) 0);
+    dma_set_write_ptr_inc(DMA, (uint32_t) 4);
+    dma_set_read_ptr(DMA, (uint32_t) fifo_ptr_rx);
+    dma_set_write_ptr(DMA, (uint32_t) data);
+    dma_set_spi_mode(DMA, (uint32_t) 1);
+    dma_set_data_type(DMA, (uint32_t) 0);
+    dma_set_cnt_start(DMA, (uint32_t) byte_count);
+
+    // Read command
     uint32_t read_from_mem = 0x0b;
-    spi_write_word(SPI, read_from_mem);
     uint32_t cmd_read_from_mem = spi_create_command((spi_command_t){
         .len       = 0,
         .csaat     = true,
         .speed     = kSpiSpeedStandard,
         .direction = kSpiDirTxOnly
     });
-    spi_set_command(SPI, cmd_read_from_mem);
-    spi_wait_for_ready(SPI);
 
+    // Address command
     uint32_t addr_cmd = 0x00000000;
-    spi_write_word(SPI, addr_cmd);
-    spi_wait_for_ready(SPI);
     uint32_t cmd_address = spi_create_command((spi_command_t){
         .len       = 3,
         .csaat     = true,
         .speed     = kSpiSpeedStandard,
         .direction = kSpiDirTxOnly
     });
-    spi_set_command(SPI, cmd_address);
-    spi_wait_for_ready(SPI);
 
+    // Dummy command
     uint32_t dummy_cmd = 0x00000000;
-    spi_write_word(SPI, dummy_cmd);
-    spi_wait_for_ready(SPI);
     uint32_t cmd_dummy = spi_create_command((spi_command_t){
         .len       = 3,
         .csaat     = true,
         .speed     = kSpiSpeedStandard,
         .direction = kSpiDirTxOnly
     });
-    spi_set_command(SPI, cmd_dummy);
-    spi_wait_for_ready(SPI);
 
+    // Dummy command
     uint32_t dummy_cmd_2 = 0x00;
-    spi_write_word(SPI, dummy_cmd_2);
-    spi_wait_for_ready(SPI);
     uint32_t cmd_dummy_2 = spi_create_command((spi_command_t){
         .len       = 0,
         .csaat     = true,
         .speed     = kSpiSpeedStandard,
         .direction = kSpiDirTxOnly
     });
-    spi_set_command(SPI, cmd_dummy_2);
-    spi_wait_for_ready(SPI);
 
-    uint32_t *fifo_ptr_rx = SPI->base_addr.base + SPI_HOST_RXDATA_REG_OFFSET;
+    while(byte_count > ADC_BUFFER_SIZE*4){ // byte_count > ADC_BUFFER_SIZE*4
+        // Read command
+        spi_write_word(SPI, read_from_mem);
+        spi_set_command(SPI, cmd_read_from_mem);
+        spi_wait_for_ready(SPI);
+        // Address command
+        spi_write_word(SPI, addr_cmd);
+        spi_wait_for_ready(SPI);
+        spi_set_command(SPI, cmd_address);
+        spi_wait_for_ready(SPI);
+        // Dummy command
+        spi_write_word(SPI, dummy_cmd);
+        spi_wait_for_ready(SPI);
+        spi_set_command(SPI, cmd_dummy);
+        spi_wait_for_ready(SPI);
+        // Dummy command 2
+        spi_write_word(SPI, dummy_cmd_2);
+        spi_wait_for_ready(SPI);
+        spi_set_command(SPI, cmd_dummy_2);
+        spi_wait_for_ready(SPI);
+        // Receive data
+        const uint32_t cmd_read_rx = spi_create_command((spi_command_t){
+            .len       = ADC_BUFFER_SIZE*4 - 1,
+            .csaat     = false,
+            .speed     = kSpiSpeedStandard,
+            .direction = kSpiDirRxOnly
+        });
+        spi_set_command(SPI, cmd_read_rx);
+        spi_wait_for_ready(SPI);
+        byte_count -= ADC_BUFFER_SIZE*4;
+    }
 
-    dma_set_read_ptr_inc(DMA, (uint32_t) 0);
-    dma_set_write_ptr_inc(DMA, (uint32_t) 4);
-    dma_set_read_ptr(DMA, (uint32_t) fifo_ptr_rx);
-    dma_set_write_ptr(DMA, (uint32_t) data);
-
-    dma_set_spi_mode(DMA, (uint32_t) 1);
-    dma_set_data_type(DMA, (uint32_t) 0);
-    dma_set_cnt_start(DMA, (uint32_t) byte_count);
-
-    const uint32_t cmd_read_rx = spi_create_command((spi_command_t){
-        .len       = byte_count - 1,
-        .csaat     = false,
-        .speed     = kSpiSpeedStandard,
-        .direction = kSpiDirRxOnly
-    });
-    spi_set_command(SPI, cmd_read_rx);
-    spi_wait_for_ready(SPI);
+    if (byte_count != 0){
+        // Read command
+        spi_write_word(SPI, read_from_mem);
+        spi_set_command(SPI, cmd_read_from_mem);
+        spi_wait_for_ready(SPI);
+        // Address command
+        spi_write_word(SPI, addr_cmd);
+        spi_wait_for_ready(SPI);
+        spi_set_command(SPI, cmd_address);
+        spi_wait_for_ready(SPI);
+        // Dummy command
+        spi_write_word(SPI, dummy_cmd);
+        spi_wait_for_ready(SPI);
+        spi_set_command(SPI, cmd_dummy);
+        spi_wait_for_ready(SPI);
+        // Dummy command 2
+        spi_write_word(SPI, dummy_cmd_2);
+        spi_wait_for_ready(SPI);
+        spi_set_command(SPI, cmd_dummy_2);
+        spi_wait_for_ready(SPI);
+        // Receive data
+        const uint32_t cmd_read_rx = spi_create_command((spi_command_t){
+            .len       = byte_count - 1,
+            .csaat     = false,
+            .speed     = kSpiSpeedStandard,
+            .direction = kSpiDirRxOnly
+        });
+        spi_set_command(SPI, cmd_read_rx);
+        spi_wait_for_ready(SPI); 
+    }
 
     while(dma_intr_flag == 0) {
         wait_for_interrupt();
@@ -217,7 +259,7 @@ static inline void lpf_hpf(){
     uint32_t x = 0;
     uint32_t h = 0;
     uint32_t l = m;
-    PRINTF("%sLPF %s HPF\n",OUTPUT_START_SEQ, OUTPUT_DIVIDER);
+    PRINTF("%sLPF %s HPF %s IN\n",OUTPUT_START_SEQ, OUTPUT_DIVIDER, OUTPUT_DIVIDER);
     for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
         x = data[i];        // The current value to compute the mean
         mb -= m;            // 4*mean without the last value
@@ -225,7 +267,7 @@ static inline void lpf_hpf(){
         m = mb >> bits;     // The new mean (4*mean/4)
         h = l - m;          // The new HPFd value (signal - mean)
         l = x;              // The value of data[i-1] for the next iteration
-        PRINTF("%02d %s %02d\n", m, OUTPUT_DIVIDER, h );
+        PRINTF("%02d %s %02d %s %02d\n", m, OUTPUT_DIVIDER, h, OUTPUT_DIVIDER, x);
     }
     PRINTF("%s\n",OUTPUT_END_SEQ);
 }
