@@ -13,9 +13,11 @@ import csv
 
 ADC_OFFSET = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43c00000
-#PERFORMANCE_COUNTERS_OFFSET = 0x43C10000
 OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43c10000
 PERFORMANCE_COUNTERS_OFFSET = 0x43c20000
+R_OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43c30000
+R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET = 0x43c40000
+
 
 class x_heep(Overlay):
 
@@ -88,6 +90,18 @@ class x_heep(Overlay):
         obi[:] = 0
 
         return obi
+    
+    def init_r_obi(self):
+
+        # Write Flash base address to AXI address adder
+        axi_address_adder = MMIO(R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        axi_address_adder.write(0x0, 0x00018000)
+        
+        #Test: Check if the value written and read from the register is the same or not.
+        result = axi_address_adder.read(0x0)
+        print(result)
+
+        return None
 
 
     def reset_flash(self, flash):
@@ -114,6 +128,22 @@ class x_heep(Overlay):
 
         #Write to the memory space allocated for OBI applications a test case
         obi[:] = write_list
+        
+    def write_r_obi(self):
+        # Write 5 data to x_heep's memory
+        axi_address_adder = MMIO(R_OBI_AXI_ADDRESS_ADDER_OFFSET, 0x14)
+        axi_address_adder.write(0x0, 0x00020001)
+        axi_address_adder.write(0x4, 0x00020002)
+        axi_address_adder.write(0x8, 0x00020003)
+        axi_address_adder.write(0xC, 0x00020004)
+        axi_address_adder.write(0x10, 0x00020005)
+        
+        #Read 5 data from x_heep's memory
+        print("First num:", axi_address_adder.read(0x0))
+        print("First num:", axi_address_adder.read(0x4))
+        print("First num:", axi_address_adder.read(0x8))
+        print("First num:", axi_address_adder.read(0xC))
+        print("First num:", axi_address_adder.read(0x10))
 
 
     def read_flash(self, flash):
