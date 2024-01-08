@@ -13,26 +13,22 @@ x_heep = x_heep()
 # Compile the application
 x_heep.compile_app("virtual_obi_write")
 
-# Init the OBI
-obi = x_heep.init_obi()
+# Init the OBI memory
+obi = x_heep.init_obi_mem()
 
-# Reset the OBI Memory
-x_heep.reset_obi(obi)
-
-#Check if OBI memory is resetted
-obi_read = x_heep.read_obi(obi)
+# Reset the OBI memory
+x_heep.reset_obi_mem(obi)
 
 # Run the application
 x_heep.run_app()
 
-#Compare application output
-obi_read = x_heep.read_obi(obi)
+# Read the OBI memory
+obi_read = x_heep.read_obi_mem(obi)
 target_read = list()
 for i in range(1024):
     target_read.append(i ** 2)
-#print(target_read)
 if target_read == obi_read:
-    print("Arrays matching! Write from RISCV Successful.")
+    print("Write operation successful.")
 
 # Delete OBI
 del obi

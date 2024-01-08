@@ -12,23 +12,16 @@ import sys
 import csv
 
 ADC_OFFSET = 0x40000000
-FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43c00000
-#PERFORMANCE_COUNTERS_OFFSET = 0x43C10000
-OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43c10000
-PERFORMANCE_COUNTERS_OFFSET = 0x43c20000
+FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43C00000
+OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C10000
+PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
 
 class x_heep(Overlay):
 
     def __init__(self, ILA_debug = False, **kwargs):
 
         # Load bitstream
-        if not ILA_debug:
-            super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
-        else:
-            """
-            When debugging with ILA, you first need to program the FPGA with base.bit, then program it again from the Vivado with the desired bitstream file. For this, set ILA_debug = True when debugging and initializing the x_heep class in Python.
-            """
-            super().__init__("base.bit", **kwargs)
+        super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
 
 
     def load_bitstream(self):
@@ -70,35 +63,12 @@ class x_heep(Overlay):
         flash[:] = 0
 
         return flash
-    
-    def init_obi(self):
-
-        # Allocate OBI Memory
-        obi = allocate(shape=(1024,)) #32768 -> old value
-
-        # Write Flash base address to AXI address adder
-        axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
-        axi_address_adder.write(0x0, obi.physical_address)
-        
-        #Test: Check if the value written and read from the register is the same or not.
-        #result = axi_address_adder.read(0x0)
-        #print(obi.physical_address == result)
-
-        # Reset Flash
-        obi[:] = 0
-
-        return obi
 
 
     def reset_flash(self, flash):
 
         # Reset Flash
         flash[:] = 0
-
-    def reset_obi(self, obi):
-
-        # Reset OBI
-        obi[:] = 0
 
 
     def write_flash(self, flash):
@@ -110,11 +80,6 @@ class x_heep(Overlay):
             flash[i] = (file_byte[i*4+3] << 24) | (file_byte[i*4+2] << 16) | (file_byte[i*4+1] << 8) | file_byte[i*4];
         file.close()
 
-    def write_obi_memory(self, write_list, obi):
-
-        #Write to the memory space allocated for OBI applications a test case
-        obi[:] = write_list
-
 
     def read_flash(self, flash):
 
@@ -123,11 +88,6 @@ class x_heep(Overlay):
         byte_array = bytearray(flash)
         file.write(byte_array)
         file.close()
-        
-    def read_obi(self, obi):
-        
-        print(obi)
-        return list(obi)
 
 
     def init_adc_mem(self):
@@ -166,6 +126,39 @@ class x_heep(Overlay):
         for i in range(2048):
             file.write(adc_mem.read(i*4).to_bytes(4, 'little'))
         file.close()
+
+
+    def init_obi_mem(self):
+
+        # Allocate OBI memory
+        obi = allocate(shape=(1024,))
+
+        # Write OBI memory base address to AXI address adder
+        axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        axi_address_adder.write(0x0, obi.physical_address)
+
+        # Reset OBI memory
+        obi[:] = 0
+
+        return obi
+
+
+    def reset_obi_mem(self, obi):
+
+        # Reset OBI memory
+        obi[:] = 0
+
+
+    def write_obi_mem(self, write_list, obi):
+
+        # Write OBI memory
+        obi[:] = write_list
+
+
+    def read_obi_mem(self, obi):
+
+        # Read OBI memory
+        return list(obi)
 
 
     def init_perf_cnt(self):

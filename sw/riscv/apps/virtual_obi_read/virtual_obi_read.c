@@ -12,21 +12,20 @@
 
 int main(int argc, char *argv[])
 {
-    printf("Started!\n\r");
-    
     unsigned int* pointer = (unsigned int*)EXT_SLAVE_START_ADDRESS;
     unsigned int value = *pointer;
-    
+
     for (int i=0; i < 1024; i++){
         value = *pointer;
         if (value != i * i){
             printf("An element does not match!");
-            printf("Not Matching!: %d -- %d", value, i*i);
-            return 1;
+            printf("Not matching: %d -- %d", value, i*i);
+            return EXIT_FAILURE;
         }
-        pointer++; 
+        pointer++;
     }
-    
-    printf("Read operation successful!");
+
+    printf("Read operation successful.");
+
     return EXIT_SUCCESS;
 }

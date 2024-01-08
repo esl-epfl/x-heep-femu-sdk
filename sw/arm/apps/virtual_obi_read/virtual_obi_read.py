@@ -13,20 +13,17 @@ x_heep = x_heep()
 # Compile the application
 x_heep.compile_app("virtual_obi_read")
 
-# Init the OBI
-obi = x_heep.init_obi()
+# Init the OBI memory
+obi = x_heep.init_obi_mem()
 
-# Reset the OBI Memory
-x_heep.reset_obi(obi)
+# Reset the OBI memory
+x_heep.reset_obi_mem(obi)
 
-#Write the OBI Memory
+# Write to the OBI memory
 write_list = list()
 for i in range(1024):
     write_list.append(i ** 2)
-x_heep.write_obi_memory(write_list, obi)
-
-#Check if OBI memory is as desired
-obi_read = x_heep.read_obi(obi)
+x_heep.write_obi_mem(write_list, obi)
 
 # Run the application
 x_heep.run_app()
