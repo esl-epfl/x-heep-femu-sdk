@@ -13,13 +13,13 @@
 int main(int argc, char *argv[])
 {
     unsigned int* pointer = (unsigned int*)EXT_SLAVE_START_ADDRESS;
-    
-    int i;
-    
-    for (i=0; i < 1024; i++){
-        *pointer = i*i; //write the squared index to the DDR memory on PS side
-        pointer++; 
+
+    for (int i=0; i < 1024; i++){
+        *pointer = i*i;
+        pointer++;
     }
-    
+
+    printf("Done.\n\r");
+
     return EXIT_SUCCESS;
 }
