@@ -1,3 +1,9 @@
+# Copyright 2023 EPFL
+# Solderpad Hardware License, Version 2.1, see LICENSE.md for details.
+# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
+#
+# Author: Deniz Kasap - deniz.kasap@epfl.ch
+
 import os
 import subprocess
 import datetime
@@ -7,7 +13,7 @@ command = "python3 "
 file1 = open('unit_tests.txt', 'w')
 now = datetime.datetime.now()
 
-list_of_tests = [] 
+list_of_tests = []
 current_path = os.listdir(cwd)
 
 for entity in current_path:
@@ -25,7 +31,7 @@ L.append("Verification Script Started: " + now.strftime("%m/%d/%Y, %H:%M:%S") + 
 allPassed = True
 for unit_test in list_of_tests:
     for file in os.listdir(unit_test):
-        if file[-3:] == ".py": #check if it is a Python script
+        if file[-3:] == ".py":
             complete_test_path = os.path.join(unit_test, file)
             proc = subprocess.Popen(command + complete_test_path, stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
