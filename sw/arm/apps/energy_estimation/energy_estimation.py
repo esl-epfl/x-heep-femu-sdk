@@ -39,3 +39,12 @@ x_heep.estimate_energy("LVT")
 
 # Delete perf_cnt
 del perf_cnt
+
+# Verify the output
+stdout_path = "/home/xilinx/x-heep-femu-sdk/sw/riscv/build/stdout.txt"
+expected_output = "Hello World!"
+f = open(stdout_path, "r")
+if f.read().strip() == expected_output:
+    print("Test Passed!")
+else:
+    print("Test Failed!")

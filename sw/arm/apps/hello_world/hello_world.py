@@ -22,3 +22,5 @@ expected_output = "Hello World!"
 f = open(stdout_path, "r")
 if f.read().strip() == expected_output:
     print("Test Passed!")
+else:
+    print("Test Failed!")
