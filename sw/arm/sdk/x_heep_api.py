@@ -13,11 +13,12 @@ import csv
 
 ADC_OFFSET = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43C00000
-PERFORMANCE_COUNTERS_OFFSET = 0x43C10000
+OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C10000
+PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
 
 class x_heep(Overlay):
 
-    def __init__(self, **kwargs):
+    def __init__(self, ILA_debug = False, **kwargs):
 
         # Load bitstream
         super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
@@ -125,6 +126,39 @@ class x_heep(Overlay):
         for i in range(2048):
             file.write(adc_mem.read(i*4).to_bytes(4, 'little'))
         file.close()
+
+
+    def init_obi_mem(self):
+
+        # Allocate OBI memory
+        obi = allocate(shape=(1024,))
+
+        # Write OBI memory base address to AXI address adder
+        axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        axi_address_adder.write(0x0, obi.physical_address)
+
+        # Reset OBI memory
+        obi[:] = 0
+
+        return obi
+
+
+    def reset_obi_mem(self, obi):
+
+        # Reset OBI memory
+        obi[:] = 0
+
+
+    def write_obi_mem(self, write_list, obi):
+
+        # Write OBI memory
+        obi[:] = write_list
+
+
+    def read_obi_mem(self, obi):
+
+        # Read OBI memory
+        return list(obi)
 
 
     def init_perf_cnt(self):
