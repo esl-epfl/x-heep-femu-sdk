@@ -41,7 +41,7 @@ for i in range(int(len(expected_byte)/4)):
     if written != read:
         allEqual = False
         break
-        
+
 if allEqual:
     print("Test Passed!")
 else:
