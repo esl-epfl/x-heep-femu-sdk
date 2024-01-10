@@ -27,3 +27,19 @@ x_heep.read_flash(flash)
 
 # Delete flash
 del flash
+
+# Verify the output
+file_expected = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/flash_out.bin", mode="rb")
+expected_byte = file_expected.read()
+
+allEqual = True
+for i in range(32):
+    written = int((expected_byte[i*4] << 24) | (expected_byte[i*4+1] << 16) | (expected_byte[i*4+2] << 8) | expected_byte[i*4+3])
+    if written != i:
+        allEqual = False
+        break
+
+if allEqual:
+    print("Test Passed!")
+else:
+    print("Test Failed!")

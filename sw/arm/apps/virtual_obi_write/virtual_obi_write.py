@@ -28,7 +28,9 @@ target_read = list()
 for i in range(1024):
     target_read.append(i ** 2)
 if target_read == obi_read:
-    print("Write operation successful.")
+    print("Test Passed!")
+else:
+    print("Test Failed!")
 
 # Delete OBI
 del obi

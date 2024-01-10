@@ -15,3 +15,12 @@ x_heep.compile_app("hello_world")
 
 # Run the application
 x_heep.run_app()
+
+# Verify the output
+stdout_path = "/home/xilinx/x-heep-femu-sdk/sw/riscv/build/stdout.txt"
+expected_output = "Hello World!"
+f = open(stdout_path, "r")
+if f.read().strip() == expected_output:
+    print("Test Passed!")
+else:
+    print("Test Failed!")

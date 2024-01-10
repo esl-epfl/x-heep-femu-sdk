@@ -30,3 +30,12 @@ x_heep.run_app()
 
 # Delete OBI
 del obi
+
+# Verify the output
+stdout_path = "/home/xilinx/x-heep-femu-sdk/sw/riscv/build/stdout.txt"
+expected_output = "Read operation successful."
+f = open(stdout_path, "r")
+if f.read().strip() == expected_output:
+    print("Test Passed!")
+else:
+    print("Test Failed!")
