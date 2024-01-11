@@ -15,6 +15,8 @@ ADC_OFFSET = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43C00000
 OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C10000
 PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
+R_OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C30000
+R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET = 0x43C40000
 
 class x_heep(Overlay):
 
@@ -160,7 +162,33 @@ class x_heep(Overlay):
         # Read OBI memory
         return list(obi)
 
+    def init_r_obi(self):
 
+        # Write Flash base address to AXI address adder
+        axi_address_adder = MMIO(R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        axi_address_adder.write(0x0, 0x00010000)
+        #Test: Check if the value written and read from the register is the same or not.
+        result = axi_address_adder.read(0x0)
+        print(result)
+
+        return None
+    
+    def write_r_obi(self):
+        # Write 5 data to x_heep's memory
+        axi_address_adder = MMIO(R_OBI_AXI_ADDRESS_ADDER_OFFSET, 0x8)
+        axi_address_adder.write(0x0, 0x00020001)
+        axi_address_adder.write(0x4, 0x00030012)
+        #axi_address_adder.write(0x8, 0x00020203)
+        #axi_address_adder.write(0xC, 0x00024004)
+        #axi_address_adder.write(0x10, 0x00020005)
+        
+        #Read 5 data from x_heep's memory
+        print("First num:", hex(axi_address_adder.read(0x0)))# == 0x00020001)
+        print("Second num:", hex(axi_address_adder.read(0x4)))# == 0x00030012)
+        #print("First num:", hex(axi_address_adder.read(0x8)))
+        #print("First num:", hex(axi_address_adder.read(0xC)))
+        #print("First num:", hex(axi_address_adder.read(0x10)))
+        
     def init_perf_cnt(self):
 
         # Map performance counters
