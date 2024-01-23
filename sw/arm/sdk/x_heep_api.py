@@ -7,14 +7,15 @@
 from pynq import Overlay
 from pynq import MMIO
 from pynq import allocate
+from pynq import GPIO
 import os
 import sys
 import csv
 
 ADC_OFFSET = 0x40000000
-FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x43C00000
-OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C10000
-PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
+FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x40010000
+OBI_AXI_ADDRESS_ADDER_OFFSET = 0x40020000
+PERFORMANCE_COUNTERS_OFFSET = 0x40030000
 
 class x_heep(Overlay):
 
@@ -48,6 +49,14 @@ class x_heep(Overlay):
 
         # Debug application (no Jupyter support)
         os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh debug")
+        
+    def set_gpio_1(self):
+        output = GPIO(GPIO.get_gpio_pin(5), 'out')
+        output.write(1)
+        
+    def set_gpio_0(self):
+        output = GPIO(GPIO.get_gpio_pin(5), 'out')
+        output.write(0)
 
 
     def init_flash(self):
