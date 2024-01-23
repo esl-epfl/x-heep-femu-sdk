@@ -11,6 +11,7 @@ from pynq import GPIO
 import os
 import sys
 import csv
+import time
 
 ADC_OFFSET = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x40010000
@@ -23,6 +24,7 @@ class x_heep(Overlay):
 
         # Load bitstream
         super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
+        self.release_reset()
 
 
     def load_bitstream(self):
@@ -50,14 +52,25 @@ class x_heep(Overlay):
         # Debug application (no Jupyter support)
         os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh debug")
         
-    def set_gpio_1(self):
-        output = GPIO(GPIO.get_gpio_pin(5), 'out')
-        output.write(1)
+    def assert_reset(self):
         
-    def set_gpio_0(self):
+        #Sets the active-high GPIO reset to 1 (active-low X-HEEP reset to 0)
+        output = GPIO(GPIO.get_gpio_pin(5), 'out')
+        output.write(1)        
+        
+    def release_reset(self):
+        
+        #Sets the active-high GPIO reset to 0 (active-low X-HEEP reset to 1)
         output = GPIO(GPIO.get_gpio_pin(5), 'out')
         output.write(0)
-
+        
+    def reset_pulse(self):
+        
+        #Resets the X-HEEP by sending a pulse of reset
+        self.assert_reset()
+        time.sleep(0.005)
+        self.release_reset()
+        
 
     def init_flash(self):
 
