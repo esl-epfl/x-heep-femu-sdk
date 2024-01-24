@@ -27,6 +27,8 @@ class x_heep(Overlay):
         # Load bitstream
         super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
         self.release_reset()
+        self.release_execute_from_flash
+        self.release_boot_select
 
 
     def load_bitstream(self):
@@ -65,6 +67,30 @@ class x_heep(Overlay):
         #Sets the active-high GPIO reset to 0 (active-low X-HEEP reset to 1)
         output = GPIO(GPIO.get_gpio_pin(5), 'out')
         output.write(0)
+        
+    def assert_boot_select(self):
+        
+        #Sets the boot_select GPIO pin to 1 
+        gpio_boot_select = GPIO(GPIO.get_gpio_pin(6), 'out')
+        gpio_boot_select.write(1)        
+        
+    def release_boot_select(self):
+        
+        #Sets the boot_select GPIO pin to 0
+        gpio_boot_select = GPIO(GPIO.get_gpio_pin(6), 'out')
+        gpio_boot_select.write(0)
+        
+    def assert_execute_from_flash(self):
+        
+        #Sets the execute_from_flash GPIO pin to 1 
+        gpio_execute_from_flash = GPIO(GPIO.get_gpio_pin(7), 'out')
+        gpio_execute_from_flash.write(1)        
+        
+    def release_execute_from_flash(self):
+        
+        #Sets the execute_from_flash GPIO pin to 0
+        gpio_execute_from_flash = GPIO(GPIO.get_gpio_pin(7), 'out')
+        gpio_execute_from_flash.write(0)
         
     def reset_pulse(self):
         
