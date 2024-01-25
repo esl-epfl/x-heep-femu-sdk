@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Jan 24 15:52:58 2024" VIVADOVERSION="2023.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Jan 25 15:45:05 2024" VIVADOVERSION="2023.1">
 
   <SYSTEMINFO ARCH="zynq" BOARD="tul.com.tw:pynq-z2:part0:1.0" DEVICE="7z020" NAME="processing_system" PACKAGE="clg400" SPEEDGRADE="-1"/>
 
@@ -1243,6 +1243,16 @@
         <CONNECTION INSTANCE="axi_interconnect_0" PORT="M04_ARESETN"/>
         <CONNECTION INSTANCE="axi_interconnect_0" PORT="M06_ARESETN"/>
         <CONNECTION INSTANCE="axi_interconnect_0" PORT="M07_ARESETN"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="I" LEFT="29" NAME="GPIO_in" RIGHT="0" SIGIS="undef" SIGNAME="External_Ports_GPIO_in">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="xlconcat_0" PORT="In4"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" LEFT="29" NAME="GPIO_out" RIGHT="0" SIGIS="undef" SIGNAME="xlslice_7_Dout">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="xlslice_7" PORT="Dout"/>
       </CONNECTIONS>
     </PORT>
   </EXTERNALPORTS>
@@ -5594,7 +5604,7 @@
         <PARAMETER NAME="USE_TRACE_DATA_EDGE_DETECTOR" VALUE="0"/>
         <PARAMETER NAME="C_TRACE_PIPELINE_WIDTH" VALUE="8"/>
         <PARAMETER NAME="C_TRACE_BUFFER_CLOCK_DELAY" VALUE="12"/>
-        <PARAMETER NAME="C_EMIO_GPIO_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="C_EMIO_GPIO_WIDTH" VALUE="38"/>
         <PARAMETER NAME="C_INCLUDE_ACP_TRANS_CHECK" VALUE="0"/>
         <PARAMETER NAME="C_USE_DEFAULT_ACP_USER_VAL" VALUE="0"/>
         <PARAMETER NAME="C_S_AXI_ACP_ARUSER_VAL" VALUE="31"/>
@@ -5928,7 +5938,7 @@
         <PARAMETER NAME="PCW_USE_EXPANDED_PS_SLCR_REGISTERS" VALUE="0"/>
         <PARAMETER NAME="PCW_USE_CORESIGHT" VALUE="0"/>
         <PARAMETER NAME="PCW_EN_EMIO_SRAM_INT" VALUE="0"/>
-        <PARAMETER NAME="PCW_GPIO_EMIO_GPIO_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="PCW_GPIO_EMIO_GPIO_WIDTH" VALUE="38"/>
         <PARAMETER NAME="PCW_GP0_NUM_WRITE_THREADS" VALUE="4"/>
         <PARAMETER NAME="PCW_GP0_NUM_READ_THREADS" VALUE="4"/>
         <PARAMETER NAME="PCW_GP1_NUM_WRITE_THREADS" VALUE="4"/>
@@ -6216,7 +6226,7 @@
         <PARAMETER NAME="PCW_GPIO_MIO_GPIO_ENABLE" VALUE="0"/>
         <PARAMETER NAME="PCW_GPIO_MIO_GPIO_IO" VALUE="&lt;Select>"/>
         <PARAMETER NAME="PCW_GPIO_EMIO_GPIO_ENABLE" VALUE="1"/>
-        <PARAMETER NAME="PCW_GPIO_EMIO_GPIO_IO" VALUE="8"/>
+        <PARAMETER NAME="PCW_GPIO_EMIO_GPIO_IO" VALUE="38"/>
         <PARAMETER NAME="PCW_APU_CLK_RATIO_ENABLE" VALUE="6:2:1"/>
         <PARAMETER NAME="PCW_ENET0_PERIPHERAL_FREQMHZ" VALUE="1000 Mbps"/>
         <PARAMETER NAME="PCW_ENET1_PERIPHERAL_FREQMHZ" VALUE="1000 Mbps"/>
@@ -6524,12 +6534,12 @@
         <PARAMETER NAME="C_HIGHADDR" VALUE="0x1FFFFFFF"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="GPIO_I" RIGHT="0" SIGIS="undef" SIGNAME="xlconcat_0_dout">
+        <PORT DIR="I" LEFT="37" NAME="GPIO_I" RIGHT="0" SIGIS="undef" SIGNAME="xlconcat_0_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlconcat_0" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="GPIO_O" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="O" LEFT="37" NAME="GPIO_O" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlslice_0" PORT="Din"/>
             <CONNECTION INSTANCE="xlslice_1" PORT="Din"/>
@@ -6538,9 +6548,10 @@
             <CONNECTION INSTANCE="xlslice_4" PORT="Din"/>
             <CONNECTION INSTANCE="xlslice_5" PORT="Din"/>
             <CONNECTION INSTANCE="xlslice_6" PORT="Din"/>
+            <CONNECTION INSTANCE="xlslice_7" PORT="Din"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="GPIO_T" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="37" NAME="GPIO_T" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" NAME="UART1_TX" SIGIS="undef" SIGNAME="processing_system7_0_UART1_TX">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xpm_cdc_gen_1" PORT="src_in"/>
@@ -7912,8 +7923,8 @@
         <PARAMETER NAME="IN0_WIDTH" VALUE="2"/>
         <PARAMETER NAME="IN1_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN2_WIDTH" VALUE="2"/>
-        <PARAMETER NAME="IN3_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="IN4_WIDTH" VALUE="2"/>
+        <PARAMETER NAME="IN3_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="IN4_WIDTH" VALUE="30"/>
         <PARAMETER NAME="IN5_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN6_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN7_WIDTH" VALUE="1"/>
@@ -8037,7 +8048,7 @@
         <PARAMETER NAME="IN125_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN126_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN127_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="dout_width" VALUE="8"/>
+        <PARAMETER NAME="dout_width" VALUE="38"/>
         <PARAMETER NAME="NUM_PORTS" VALUE="5"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlconcat_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
@@ -8058,17 +8069,17 @@
             <CONNECTION INSTANCE="xlconstant_0" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="In3" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
+        <PORT DIR="I" LEFT="2" NAME="In3" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlconstant_1" PORT="dout"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="1" NAME="In4" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_0_dout">
+        <PORT DIR="I" LEFT="29" NAME="In4" RIGHT="0" SIGIS="undef" SIGNAME="External_Ports_GPIO_in">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconstant_0" PORT="dout"/>
+            <CONNECTION INSTANCE="External_Ports" PORT="GPIO_in"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="7" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconcat_0_dout">
+        <PORT DIR="O" LEFT="37" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconcat_0_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_I"/>
           </CONNECTIONS>
@@ -8089,7 +8100,6 @@
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlconcat_0" PORT="In0"/>
             <CONNECTION INSTANCE="xlconcat_0" PORT="In2"/>
-            <CONNECTION INSTANCE="xlconcat_0" PORT="In4"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -8098,13 +8108,13 @@
     <MODULE COREREVISION="7" FULLNAME="/xlconstant_1" HWVERSION="1.1" INSTANCE="xlconstant_1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlconstant" VLNV="xilinx.com:ip:xlconstant:1.1">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="CONST_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="CONST_VAL" VALUE="0x1"/>
+        <PARAMETER NAME="CONST_WIDTH" VALUE="3"/>
+        <PARAMETER NAME="CONST_VAL" VALUE="0x7"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlconstant_1_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="O" LEFT="0" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
+        <PORT DIR="O" LEFT="2" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconstant_1_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlconcat_0" PORT="In3"/>
           </CONNECTIONS>
@@ -8115,7 +8125,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_0" HWVERSION="1.0" INSTANCE="xlslice_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="3"/>
         <PARAMETER NAME="DIN_TO" VALUE="3"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_0_0"/>
@@ -8123,7 +8133,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8139,7 +8149,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_1" HWVERSION="1.0" INSTANCE="xlslice_1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="4"/>
         <PARAMETER NAME="DIN_TO" VALUE="4"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_1_0"/>
@@ -8147,7 +8157,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8163,7 +8173,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_2" HWVERSION="1.0" INSTANCE="xlslice_2" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="1"/>
         <PARAMETER NAME="DIN_TO" VALUE="1"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_2_0"/>
@@ -8171,7 +8181,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8187,7 +8197,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_3" HWVERSION="1.0" INSTANCE="xlslice_3" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="0"/>
         <PARAMETER NAME="DIN_TO" VALUE="0"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_3_0"/>
@@ -8195,7 +8205,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8211,7 +8221,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_4" HWVERSION="1.0" INSTANCE="xlslice_4" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="5"/>
         <PARAMETER NAME="DIN_TO" VALUE="5"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_4_0"/>
@@ -8219,7 +8229,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8235,7 +8245,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_5" HWVERSION="1.0" INSTANCE="xlslice_5" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="6"/>
         <PARAMETER NAME="DIN_TO" VALUE="6"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_5_0"/>
@@ -8243,7 +8253,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8259,7 +8269,7 @@
     <MODULE COREREVISION="2" FULLNAME="/xlslice_6" HWVERSION="1.0" INSTANCE="xlslice_6" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
       <DOCUMENTS/>
       <PARAMETERS>
-        <PARAMETER NAME="DIN_WIDTH" VALUE="8"/>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
         <PARAMETER NAME="DIN_FROM" VALUE="7"/>
         <PARAMETER NAME="DIN_TO" VALUE="7"/>
         <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_6_0"/>
@@ -8267,7 +8277,7 @@
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="7" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
           <CONNECTIONS>
             <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
           </CONNECTIONS>
@@ -8275,6 +8285,30 @@
         <PORT DIR="O" LEFT="0" NAME="Dout" RIGHT="0" SIGIS="undef" SIGNAME="xlslice_6_Dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="External_Ports" PORT="gpio_execute_from_flash_i"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE COREREVISION="2" FULLNAME="/xlslice_7" HWVERSION="1.0" INSTANCE="xlslice_7" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xlslice" VLNV="xilinx.com:ip:xlslice:1.0">
+      <DOCUMENTS/>
+      <PARAMETERS>
+        <PARAMETER NAME="DIN_WIDTH" VALUE="38"/>
+        <PARAMETER NAME="DIN_FROM" VALUE="37"/>
+        <PARAMETER NAME="DIN_TO" VALUE="8"/>
+        <PARAMETER NAME="Component_Name" VALUE="processing_system_xlslice_4_1"/>
+        <PARAMETER NAME="DOUT_WIDTH" VALUE="30"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT DIR="I" LEFT="37" NAME="Din" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_GPIO_O">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="processing_system7_0" PORT="GPIO_O"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="29" NAME="Dout" RIGHT="0" SIGIS="undef" SIGNAME="xlslice_7_Dout">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="GPIO_out"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
