@@ -2,4 +2,4 @@
 
 https://github.com/esl-epfl/x-heep-femu
 
-53c56b76e11bb64639ef6a61f54d58e0e6e45583
+abd72bf44c6c537ea60a5d0b42a3151d7881368e
