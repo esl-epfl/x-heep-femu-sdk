@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Jan 22 16:01:50 2024" VIVADOVERSION="2023.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Jan 25 13:37:37 2024" VIVADOVERSION="2022.2">
 
   <SYSTEMINFO ARCH="zynq" BOARD="tul.com.tw:pynq-z2:part0:1.0" DEVICE="7z020" NAME="processing_system" PACKAGE="clg400" SPEEDGRADE="-1"/>
 
@@ -1194,18 +1194,20 @@
         <CONNECTION INSTANCE="xlslice_3" PORT="Dout"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" NAME="UART_TX" SIGIS="undef" SIGNAME="processing_system7_0_UART1_TX">
+    <PORT DIR="I" NAME="UART_RX" SIGIS="data" SIGNAME="External_Ports_UART_RX">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="UART1_TX"/>
+        <CONNECTION INSTANCE="xpm_cdc_gen_0" PORT="src_in"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="I" NAME="UART_RX" SIGIS="undef" SIGNAME="External_Ports_UART_RX">
+    <PORT DIR="O" LEFT="0" NAME="UART_TX" RIGHT="0" SIGIS="data" SIGNAME="xpm_cdc_gen_1_dest_out">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="UART1_RX"/>
+        <CONNECTION INSTANCE="xpm_cdc_gen_1" PORT="dest_out"/>
       </CONNECTIONS>
     </PORT>
     <PORT CLKFREQUENCY="20000000" DIR="I" NAME="X_HEEP_CLK" SIGIS="clk" SIGNAME="External_Ports_X_HEEP_CLK">
       <CONNECTIONS>
+        <CONNECTION INSTANCE="xpm_cdc_gen_0" PORT="src_clk"/>
+        <CONNECTION INSTANCE="xpm_cdc_gen_1" PORT="dest_clk"/>
         <CONNECTION INSTANCE="axi_interconnect_0" PORT="S00_ACLK"/>
         <CONNECTION INSTANCE="axi_interconnect_0" PORT="M00_ACLK"/>
         <CONNECTION INSTANCE="axi_interconnect_0" PORT="M01_ACLK"/>
@@ -1812,7 +1814,7 @@
   </EXTERNALINTERFACES>
 
   <MODULES>
-    <MODULE COREREVISION="8" FULLNAME="/axi_bram_ctrl_0" HWVERSION="4.1" INSTANCE="axi_bram_ctrl_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="MEMORY_CNTLR" MODTYPE="axi_bram_ctrl" VLNV="xilinx.com:ip:axi_bram_ctrl:4.1">
+    <MODULE COREREVISION="7" FULLNAME="/axi_bram_ctrl_0" HWVERSION="4.1" INSTANCE="axi_bram_ctrl_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="MEMORY_CNTLR" MODTYPE="axi_bram_ctrl" VLNV="xilinx.com:ip:axi_bram_ctrl:4.1">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=axi_bram_ctrl;v=v4_1;d=pg078-axi-bram-ctrl.pdf"/>
       </DOCUMENTS>
@@ -2448,7 +2450,7 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE COREREVISION="29" FULLNAME="/axi_interconnect_0" HWVERSION="2.1" INSTANCE="axi_interconnect_0" IPTYPE="BUS" IS_ENABLE="1" MODCLASS="BUS" MODTYPE="axi_interconnect" VLNV="xilinx.com:ip:axi_interconnect:2.1">
+    <MODULE COREREVISION="28" FULLNAME="/axi_interconnect_0" HWVERSION="2.1" INSTANCE="axi_interconnect_0" IPTYPE="BUS" IS_ENABLE="1" MODCLASS="BUS" MODTYPE="axi_interconnect" VLNV="xilinx.com:ip:axi_interconnect:2.1">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=axi_interconnect;v=v2_1;d=pg059-axi-interconnect.pdf"/>
       </DOCUMENTS>
@@ -5345,7 +5347,7 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE COREREVISION="6" FULLNAME="/blk_mem_gen_0" HWVERSION="8.4" INSTANCE="blk_mem_gen_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="MEMORY" MODTYPE="blk_mem_gen" VLNV="xilinx.com:ip:blk_mem_gen:8.4">
+    <MODULE COREREVISION="5" FULLNAME="/blk_mem_gen_0" HWVERSION="8.4" INSTANCE="blk_mem_gen_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="MEMORY" MODTYPE="blk_mem_gen" VLNV="xilinx.com:ip:blk_mem_gen:8.4">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=blk_mem_gen;v=v8_4;d=pg058-blk-mem-gen.pdf"/>
       </DOCUMENTS>
@@ -5561,12 +5563,6 @@
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=processing_system7;v=v5_3;d=pg082-processing-system7.pdf"/>
       </DOCUMENTS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="" INTERFACE="S_AXI_HP0" NAME="HP0_DDR_LOWOCM" RANGE="536870912" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="" INTERFACE="S_AXI_HP1" NAME="HP1_DDR_LOWOCM" RANGE="536870912" USAGE="memory"/>
-      </ADDRESSBLOCKS>
       <PARAMETERS>
         <PARAMETER NAME="C_EN_EMIO_PJTAG" VALUE="0"/>
         <PARAMETER NAME="C_EN_EMIO_ENET0" VALUE="0"/>
@@ -6523,12 +6519,12 @@
         <PORT DIR="O" LEFT="4" NAME="GPIO_T" RIGHT="0" SIGIS="undef"/>
         <PORT DIR="O" NAME="UART1_TX" SIGIS="undef" SIGNAME="processing_system7_0_UART1_TX">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="UART_TX"/>
+            <CONNECTION INSTANCE="xpm_cdc_gen_1" PORT="src_in"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="UART1_RX" SIGIS="undef" SIGNAME="External_Ports_UART_RX">
+        <PORT DIR="I" NAME="UART1_RX" SIGIS="undef" SIGNAME="xpm_cdc_gen_0_dest_out">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="External_Ports" PORT="UART_RX"/>
+            <CONNECTION INSTANCE="xpm_cdc_gen_0" PORT="dest_out"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="M_AXI_GP0_ARVALID" SIGIS="undef" SIGNAME="axi_interconnect_0_S02_AXI_arvalid">
@@ -7325,6 +7321,8 @@
         </PORT>
         <PORT CLKFREQUENCY="20000000" DIR="O" NAME="FCLK_CLK0" SIGIS="clk" SIGNAME="processing_system7_0_FCLK_CLK0">
           <CONNECTIONS>
+            <CONNECTION INSTANCE="xpm_cdc_gen_0" PORT="dest_clk"/>
+            <CONNECTION INSTANCE="xpm_cdc_gen_1" PORT="src_clk"/>
             <CONNECTION INSTANCE="axi_bram_ctrl_0" PORT="s_axi_aclk"/>
             <CONNECTION INSTANCE="axi_interconnect_0" PORT="M02_ACLK"/>
             <CONNECTION INSTANCE="rst_ps7_0_20M" PORT="slowest_sync_clk"/>
@@ -8153,6 +8151,102 @@
         <PORT DIR="O" LEFT="0" NAME="Dout" RIGHT="0" SIGIS="undef" SIGNAME="xlslice_3_Dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="External_Ports" PORT="gpio_jtag_trst_ni"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE COREREVISION="2" FULLNAME="/xpm_cdc_gen_0" HWVERSION="1.0" INSTANCE="xpm_cdc_gen_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xpm_cdc_gen" VLNV="xilinx.com:ip:xpm_cdc_gen:1.0">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=xpm_cdc_gen;v=v1_0;d=pg382-xpm-cdc-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_CDC_TYPE" VALUE="6"/>
+        <PARAMETER NAME="SRC_CLK_PERIOD" VALUE="5000"/>
+        <PARAMETER NAME="DEST_CLK_PERIOD" VALUE="2500"/>
+        <PARAMETER NAME="SIM_ASSERT_CHK" VALUE="1"/>
+        <PARAMETER NAME="DEST_SYNC_FF" VALUE="3"/>
+        <PARAMETER NAME="INIT_SYNC_FF" VALUE="0"/>
+        <PARAMETER NAME="SRC_INPUT_REG" VALUE="1"/>
+        <PARAMETER NAME="WIDTH" VALUE="1"/>
+        <PARAMETER NAME="REG_OUTPUT" VALUE="0"/>
+        <PARAMETER NAME="SIM_LOSSLESS_GRAY_CHK" VALUE="0"/>
+        <PARAMETER NAME="SRC_SYNC_FF" VALUE="4"/>
+        <PARAMETER NAME="DEST_EXT_HSK" VALUE="1"/>
+        <PARAMETER NAME="RST_USED" VALUE="1"/>
+        <PARAMETER NAME="INIT" VALUE="1"/>
+        <PARAMETER NAME="RST_ACTIVE_HIGH" VALUE="0"/>
+        <PARAMETER NAME="CDC_TYPE" VALUE="xpm_cdc_single"/>
+        <PARAMETER NAME="Component_Name" VALUE="processing_system_xpm_cdc_gen_0_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="20000000" DIR="I" NAME="src_clk" SIGIS="clk" SIGNAME="External_Ports_X_HEEP_CLK">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="X_HEEP_CLK"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="20000000" DIR="I" NAME="dest_clk" SIGIS="clk" SIGNAME="processing_system7_0_FCLK_CLK0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="processing_system7_0" PORT="FCLK_CLK0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="0" NAME="src_in" RIGHT="0" SIGIS="undef" SIGNAME="External_Ports_UART_RX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="UART_RX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="0" NAME="dest_out" RIGHT="0" SIGIS="undef" SIGNAME="xpm_cdc_gen_0_dest_out">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="processing_system7_0" PORT="UART1_RX"/>
+          </CONNECTIONS>
+        </PORT>
+      </PORTS>
+      <BUSINTERFACES/>
+    </MODULE>
+    <MODULE COREREVISION="2" FULLNAME="/xpm_cdc_gen_1" HWVERSION="1.0" INSTANCE="xpm_cdc_gen_1" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="xpm_cdc_gen" VLNV="xilinx.com:ip:xpm_cdc_gen:1.0">
+      <DOCUMENTS>
+        <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=xpm_cdc_gen;v=v1_0;d=pg382-xpm-cdc-generator.pdf"/>
+      </DOCUMENTS>
+      <PARAMETERS>
+        <PARAMETER NAME="C_CDC_TYPE" VALUE="6"/>
+        <PARAMETER NAME="SRC_CLK_PERIOD" VALUE="5000"/>
+        <PARAMETER NAME="DEST_CLK_PERIOD" VALUE="2500"/>
+        <PARAMETER NAME="SIM_ASSERT_CHK" VALUE="1"/>
+        <PARAMETER NAME="DEST_SYNC_FF" VALUE="3"/>
+        <PARAMETER NAME="INIT_SYNC_FF" VALUE="0"/>
+        <PARAMETER NAME="SRC_INPUT_REG" VALUE="1"/>
+        <PARAMETER NAME="WIDTH" VALUE="1"/>
+        <PARAMETER NAME="REG_OUTPUT" VALUE="0"/>
+        <PARAMETER NAME="SIM_LOSSLESS_GRAY_CHK" VALUE="0"/>
+        <PARAMETER NAME="SRC_SYNC_FF" VALUE="4"/>
+        <PARAMETER NAME="DEST_EXT_HSK" VALUE="1"/>
+        <PARAMETER NAME="RST_USED" VALUE="1"/>
+        <PARAMETER NAME="INIT" VALUE="1"/>
+        <PARAMETER NAME="RST_ACTIVE_HIGH" VALUE="0"/>
+        <PARAMETER NAME="CDC_TYPE" VALUE="xpm_cdc_single"/>
+        <PARAMETER NAME="Component_Name" VALUE="processing_system_xpm_cdc_gen_1_0"/>
+        <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
+      </PARAMETERS>
+      <PORTS>
+        <PORT CLKFREQUENCY="20000000" DIR="I" NAME="src_clk" SIGIS="clk" SIGNAME="processing_system7_0_FCLK_CLK0">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="processing_system7_0" PORT="FCLK_CLK0"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT CLKFREQUENCY="20000000" DIR="I" NAME="dest_clk" SIGIS="clk" SIGNAME="External_Ports_X_HEEP_CLK">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="X_HEEP_CLK"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="0" NAME="src_in" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_UART1_TX">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="processing_system7_0" PORT="UART1_TX"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="0" NAME="dest_out" RIGHT="0" SIGIS="undef" SIGNAME="xpm_cdc_gen_1_dest_out">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="External_Ports" PORT="UART_TX"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
