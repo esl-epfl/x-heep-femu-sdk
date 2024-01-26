@@ -117,7 +117,7 @@ class x_heep(Overlay):
         
         #Reads from a specifc GPIO pin (pin attribute starts from 0 and 
         #first 8 GPIO bits on PS are used)
-        gpio_pin = GPIO(GPIO.get_gpio_pin(8+pin), 'in')
+        gpio_pin = GPIO(GPIO.get_gpio_pin(pin), 'in')
         pin_read = gpio_pin.read()
         return pin_read
 

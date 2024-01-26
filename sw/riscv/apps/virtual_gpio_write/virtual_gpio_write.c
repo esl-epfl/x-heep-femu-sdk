@@ -18,10 +18,13 @@ int main(int argc, char *argv[])
         gpio_res = gpio_output_set_enabled(&gpio, i+2, true);
         if (i % 2 == 0){
             gpio_write(&gpio, i+2, true);
+            printf("Written true to pin %i",i);
         }else{
             gpio_write(&gpio, i+2, false);
+            printf("Written false to pin %i",i);
         }
     }
+    printf("Done!");
 
     return EXIT_SUCCESS;
 }
