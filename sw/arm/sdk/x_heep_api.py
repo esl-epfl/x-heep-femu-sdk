@@ -7,9 +7,11 @@
 from pynq import Overlay
 from pynq import MMIO
 from pynq import allocate
+from pynq import GPIO
 import os
 import sys
 import csv
+import time
 
 ADC_OFFSET                         = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET     = 0x43C00000
@@ -24,6 +26,9 @@ class x_heep(Overlay):
 
         # Load bitstream
         super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
+        self.release_reset()
+        self.release_execute_from_flash()
+        self.release_boot_select()
 
 
     def load_bitstream(self):
@@ -50,6 +55,56 @@ class x_heep(Overlay):
 
         # Debug application (no Jupyter support)
         os.system("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh debug")
+
+
+    def assert_reset(self):
+
+        # Set the active-high GPIO reset to 1 (active-low X-HEEP reset to 0)
+        output = GPIO(GPIO.get_gpio_pin(5), 'out')
+        output.write(1)
+
+
+    def release_reset(self):
+
+        # Set the active-high GPIO reset to 0 (active-low X-HEEP reset to 1)
+        output = GPIO(GPIO.get_gpio_pin(5), 'out')
+        output.write(0)
+
+
+    def assert_boot_select(self):
+
+        # Set the boot_select GPIO pin to 1
+        gpio_boot_select = GPIO(GPIO.get_gpio_pin(6), 'out')
+        gpio_boot_select.write(1)
+
+
+    def release_boot_select(self):
+
+        # Set the boot_select GPIO pin to 0
+        gpio_boot_select = GPIO(GPIO.get_gpio_pin(6), 'out')
+        gpio_boot_select.write(0)
+
+
+    def assert_execute_from_flash(self):
+
+        # Set the execute_from_flash GPIO pin to 1
+        gpio_execute_from_flash = GPIO(GPIO.get_gpio_pin(7), 'out')
+        gpio_execute_from_flash.write(1)
+
+
+    def release_execute_from_flash(self):
+
+        # Set the execute_from_flash GPIO pin to 0
+        gpio_execute_from_flash = GPIO(GPIO.get_gpio_pin(7), 'out')
+        gpio_execute_from_flash.write(0)
+
+
+    def reset_pulse(self):
+
+        # Reset X-HEEP by sending a pulse of reset
+        self.assert_reset()
+        time.sleep(0.005)
+        self.release_reset()
 
 
     def init_flash(self):
