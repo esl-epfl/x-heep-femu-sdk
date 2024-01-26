@@ -5,6 +5,7 @@
 *.dis
 *.map
 *.do
+*.jou
 
 sw/arm/jupyter_notebooks/.ipynb_checkpoints/
 sw/arm/sdk/__pycache__/
