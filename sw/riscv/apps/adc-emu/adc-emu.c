@@ -26,7 +26,7 @@
 
 #include "definitions.h"
 
-#define REVERT_24b_ADDR(addr) ((((uint32_t)addr & 0xff0000) >> 16) | ((uint32_t)addr & 0xff00) | (((uint32_t)addr & 0xff) << 16))
+#define REVERT_32b_ADDR(addr) ((((uint32_t)addr & 0xff000000) >> 24) | (((uint32_t)addr & 0x00ff0000) >> 8) | (((uint32_t)addr & 0x0000ff00) << 8) | (((uint32_t)addr & 0x000000ff) << 24))
 #define FLASH_ADDR 0x00000000
 #define FLASH_CLK_MAX_HZ (133 * 1000 * 1000)
 
@@ -77,7 +77,7 @@ void read_from_flash(spi_host_t *SPI, dma_t *DMA, uint32_t *data, uint32_t byte_
     });
 
     // Address command
-    uint32_t addr_cmd = 0x00000000;
+    uint32_t addr_cmd = REVERT_32b_ADDR(0x00000004);
     uint32_t cmd_address = spi_create_command((spi_command_t){
         .len       = 3,
         .csaat     = true,
@@ -86,85 +86,39 @@ void read_from_flash(spi_host_t *SPI, dma_t *DMA, uint32_t *data, uint32_t byte_
     });
 
     // Dummy command
-    uint32_t dummy_cmd = 0x00000000;
+    uint32_t dummy_cmd = 0x00;
     uint32_t cmd_dummy = spi_create_command((spi_command_t){
-        .len       = 3,
-        .csaat     = true,
-        .speed     = kSpiSpeedStandard,
-        .direction = kSpiDirTxOnly
-    });
-
-    // Dummy command
-    uint32_t dummy_cmd_2 = 0x00;
-    uint32_t cmd_dummy_2 = spi_create_command((spi_command_t){
         .len       = 0,
         .csaat     = true,
         .speed     = kSpiSpeedStandard,
         .direction = kSpiDirTxOnly
     });
 
-    while(byte_count > ADC_BUFFER_SIZE*4){ // byte_count > ADC_BUFFER_SIZE*4
-        // Read command
-        spi_write_word(SPI, read_from_mem);
-        spi_set_command(SPI, cmd_read_from_mem);
-        spi_wait_for_ready(SPI);
-        // Address command
-        spi_write_word(SPI, addr_cmd);
-        spi_wait_for_ready(SPI);
-        spi_set_command(SPI, cmd_address);
-        spi_wait_for_ready(SPI);
-        // Dummy command
-        spi_write_word(SPI, dummy_cmd);
-        spi_wait_for_ready(SPI);
-        spi_set_command(SPI, cmd_dummy);
-        spi_wait_for_ready(SPI);
-        // Dummy command 2
-        spi_write_word(SPI, dummy_cmd_2);
-        spi_wait_for_ready(SPI);
-        spi_set_command(SPI, cmd_dummy_2);
-        spi_wait_for_ready(SPI);
-        // Receive data
-        const uint32_t cmd_read_rx = spi_create_command((spi_command_t){
-            .len       = ADC_BUFFER_SIZE*4 - 1,
-            .csaat     = false,
-            .speed     = kSpiSpeedStandard,
-            .direction = kSpiDirRxOnly
-        });
-        spi_set_command(SPI, cmd_read_rx);
-        spi_wait_for_ready(SPI);
-        byte_count -= ADC_BUFFER_SIZE*4;
-    }
+    // Receive data
+    const uint32_t cmd_read_rx = spi_create_command((spi_command_t){
+        .len       = byte_count - 1,
+        .csaat     = false,
+        .speed     = kSpiSpeedStandard,
+        .direction = kSpiDirRxOnly
+    });
 
-    if (byte_count != 0){
-        // Read command
-        spi_write_word(SPI, read_from_mem);
-        spi_set_command(SPI, cmd_read_from_mem);
-        spi_wait_for_ready(SPI);
-        // Address command
-        spi_write_word(SPI, addr_cmd);
-        spi_wait_for_ready(SPI);
-        spi_set_command(SPI, cmd_address);
-        spi_wait_for_ready(SPI);
-        // Dummy command
-        spi_write_word(SPI, dummy_cmd);
-        spi_wait_for_ready(SPI);
-        spi_set_command(SPI, cmd_dummy);
-        spi_wait_for_ready(SPI);
-        // Dummy command 2
-        spi_write_word(SPI, dummy_cmd_2);
-        spi_wait_for_ready(SPI);
-        spi_set_command(SPI, cmd_dummy_2);
-        spi_wait_for_ready(SPI);
-        // Receive data
-        const uint32_t cmd_read_rx = spi_create_command((spi_command_t){
-            .len       = byte_count - 1,
-            .csaat     = false,
-            .speed     = kSpiSpeedStandard,
-            .direction = kSpiDirRxOnly
-        });
-        spi_set_command(SPI, cmd_read_rx);
-        spi_wait_for_ready(SPI); 
-    }
+    // Read command
+    spi_write_word(SPI, read_from_mem);
+    spi_set_command(SPI, cmd_read_from_mem);
+    spi_wait_for_ready(SPI);
+    // Address command
+    spi_write_word(SPI, addr_cmd);
+    spi_wait_for_ready(SPI);
+    spi_set_command(SPI, cmd_address);
+    spi_wait_for_ready(SPI);
+    // Dummy command
+    spi_write_word(SPI, dummy_cmd);
+    spi_wait_for_ready(SPI);
+    spi_set_command(SPI, cmd_dummy);
+    spi_wait_for_ready(SPI);
+    // Receive data
+    spi_set_command(SPI, cmd_read_rx);
+    spi_wait_for_ready(SPI);
 
     while(dma_intr_flag == 0) {
         wait_for_interrupt();
@@ -210,26 +164,63 @@ void vadc_init()
     spi_set_configopts(&spi_host_flash, 0, chip_cfg_flash);
     spi_set_csid(&spi_host_flash, 0);
 
-    const uint32_t reset_cmd = 0x11;
-    spi_write_word(&spi_host_flash, reset_cmd);
-    const uint32_t cmd_reset = spi_create_command((spi_command_t){
+    // Config SPI to AXI bridge
+
+    const uint32_t write_mem_cmd = 0x02;
+    const uint32_t read_mem_cmd = 0x0B;
+    const uint32_t write_reg0_cmd = 0x01;
+    const uint32_t read_reg0_cmd = 0x05;
+    const uint32_t write_reg1_cmd = 0x11;
+    const uint32_t read_reg1_cmd = 0x07;
+    const uint32_t write_reg2_cmd = 0x20;
+    const uint32_t read_reg2_cmd = 0x21;
+    const uint32_t write_reg3_cmd = 0x30;
+    const uint32_t read_reg3_cmd = 0x31;
+
+    const uint32_t cmd_bridge = spi_create_command((spi_command_t){
         .len        = 0,
         .csaat      = true,
         .speed      = kSpiSpeedStandard,
         .direction  = kSpiDirTxOnly
     });
-    spi_set_command(&spi_host_flash, cmd_reset);
-    spi_wait_for_ready(&spi_host_flash);
 
     const uint32_t set_dummy_cycle = 0x07;
-    spi_write_word(&spi_host_flash, set_dummy_cycle);
-    const uint32_t cmd_set_dummy = spi_create_command((spi_command_t){
+    const uint32_t cmd_bridge_value = spi_create_command((spi_command_t){
         .len        = 0,
         .csaat      = false,
         .speed      = kSpiSpeedStandard,
         .direction  = kSpiDirTxOnly
     });
-    spi_set_command(&spi_host_flash, cmd_set_dummy);
+
+    // Set normal SPI (reg0)
+    spi_write_word(&spi_host_flash, write_reg0_cmd);
+    spi_set_command(&spi_host_flash, cmd_bridge);
+    spi_wait_for_ready(&spi_host_flash);
+    spi_write_word(&spi_host_flash, 0x00);
+    spi_set_command(&spi_host_flash, cmd_bridge_value);
+    spi_wait_for_ready(&spi_host_flash);
+    
+    // Set the dummy address (reg1)
+    spi_write_word(&spi_host_flash, write_reg1_cmd);
+    spi_set_command(&spi_host_flash, cmd_bridge);
+    spi_wait_for_ready(&spi_host_flash);
+    spi_write_word(&spi_host_flash, set_dummy_cycle);
+    spi_set_command(&spi_host_flash, cmd_bridge_value);
+    spi_wait_for_ready(&spi_host_flash);
+
+    // Set wrap around (reg3, reg2)
+    spi_write_word(&spi_host_flash, write_reg2_cmd);
+    spi_set_command(&spi_host_flash, cmd_bridge);
+    spi_wait_for_ready(&spi_host_flash);
+    spi_write_word(&spi_host_flash, 0x00);
+    spi_set_command(&spi_host_flash, cmd_bridge_value);
+    spi_wait_for_ready(&spi_host_flash);
+
+    spi_write_word(&spi_host_flash, write_reg3_cmd);
+    spi_set_command(&spi_host_flash, cmd_bridge);
+    spi_wait_for_ready(&spi_host_flash);
+    spi_write_word(&spi_host_flash, 0x04);
+    spi_set_command(&spi_host_flash, cmd_bridge_value);
     spi_wait_for_ready(&spi_host_flash);
 }
 
