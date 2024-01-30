@@ -136,6 +136,26 @@ def lpf_butter(series, cutoff, order):
     o.time = series.time
     return o
 
+
+# Function to create a Butterworth bandpass filter
+def butter_bandpass(lowcut, highcut, fs, order=4):
+    nyquist = 0.5 * fs
+    low = lowcut / nyquist
+    high = highcut / nyquist
+    b, a = butter(order, [low, high], btype='band')
+    return b, a
+
+# Function to apply a Butterworth filter to a signal
+def bpf_butter(series, lowcut, highcut, order=4):
+    o = Timeseries(series.name + " BPF")
+    o.f_Hz = series.f_Hz
+    b, a = butter_bandpass(lowcut, highcut, o.f_Hz, order=order)
+    o.data = filtfilt(b, a, series.data)
+    o.time = series.time
+    return o
+
+
+
 def norm(series, bits):
     o = Timeseries(series.name + " Norm")
     o.time = series.time
@@ -151,6 +171,26 @@ def norm(series, bits):
             d = max_val
         elif d < -max_val:
             d = -max_val
+        o.data.append(d)
+    return o
+
+def quant(series, bits):
+    o = Timeseries(series.name + f" Q({bits})")
+    o.time = series.time
+    o.f_Hz = series.f_Hz
+    sorted = np.abs(series.data)
+    sorted.sort()
+    maxs = sorted[-10:]
+    maxd = np.average(maxs)
+    max_val = int(2**bits/2 -1)
+    ratio = 1 #maxd/max_val  # Just to scale it next to the other signal
+    for s in series.data:
+        d = int(max_val*s/maxd)*ratio
+        if d > max_val:
+            d = max_val
+        elif d < -max_val:
+            d = -max_val
+
         o.data.append(d)
     return o
 
@@ -256,9 +296,14 @@ class Comparator:
             self.low    = max(0,self.ptr - 1)
 
     def compare(self, s, lvls ):
-        if      s >= lvls[self.high]:   self.cmp = CMP_H
-        elif    s <= lvls[self.low]:    self.cmp = CMP_L
-        else:                           self.cmp = CMP_N
+        try:
+            if      s >= lvls[self.high]:   self.cmp = CMP_H
+            elif    s <= lvls[self.low]:    self.cmp = CMP_L
+            else:                           self.cmp = CMP_N
+        except:
+            print(lvls)
+            print(self.high, self.low)
+
 
     def check_cross(self):
         case = self.cmp * self.dir
@@ -291,14 +336,14 @@ class Comparator:
         for i in range(1,len(series.data) ):
             dl = series.data[i] - series.data[i-1] # This should be either -1, 0 or 1
             dt = series.time[i] - series.time[i-1]
-            # ### print(f"{series.time[i]}/{series.data[i]:.1f} = {dt}/{dl}")
+            # print(f"{series.time[i]}/{series.data[i]:.1f} = {dt}/{dl}")
             self.diffd.data.append( dl )
             self.diffd.time.append( dt )
 
 
 
 def lcadc_fil(series, lvls):
-    o = Timeseries(series.name + " LC2")
+    o = Timeseries(series.name + f" LCfil({lvls[1]-lvls[0]})")
     first =  first_level(lvls)
     c = Comparator()
     c.ptr = first
@@ -314,16 +359,38 @@ def lcadc_fil(series, lvls):
         if case == NEXT:
             c.save(t)
     c.debounce()
+    c.differentiate(c.prund)
+    o.data = c.diffd.data
+    o.time = c.diffd.time
+    return o
+
+def lcadc_naive(series, lvls):
+    o = Timeseries(series.name + f" LCnaive({lvls[1]-lvls[0]})")
+    first =  first_level(lvls)
+    c = Comparator()
+    c.ptr = first
+    c.buf.data.append(first)
+    c.buf.time.append(series.time[0])
+
+    for i in range( 1, len(series.data) ):
+        s = series.data[i]
+        t = series.time[i]
+        c.set_comparators(lvls)
+        c.compare(s, lvls)
+        case = c.check_cross()
+        if case == NEXT:
+            c.save(t)
+    # c.debounce()
     c.differentiate(c.buf)
     o.data = c.diffd.data
     o.time = c.diffd.time
     return o
 
 
-def lcadc_reconstruct(series, lvls):
+def lcadc_reconstruct(series, lvls, offset=0):
     o = Timeseries(series.name + " LCrec")
     first = first_level(lvls)
-    lvl = first
+    lvl = first + offset
     o.time.append(series.time[0])
     o.data.append(lvls[lvl])
     for i in range(1, len(series.data)):
@@ -332,7 +399,7 @@ def lcadc_reconstruct(series, lvls):
         o.data.append( lvls[lvl] )
     return o
 
-def lcadc_reconstruct_time(series):
+def lcadc_reconstruct_time(series, height=16):
     o = Timeseries(series.name + " LCrecTime")
     o.time.append(series.time[0])
     o.time.append(series.time[0])
@@ -348,7 +415,7 @@ def lcadc_reconstruct_time(series):
         o.time.append( t )
         o.time.append( t +dt )
         o.data.append( 0 )
-        o.data.append( 16 if series.data[x] == 1 else -16 )
+        o.data.append( height if series.data[x] >0 else -height )
         o.data.append( 0 )
         i += 3
     return o
@@ -367,6 +434,9 @@ def lvls_shifted():
 def lvls_pwr2():
     return [ -128, -96, -64, -48, -32, -24, -16, -12, -8, -6, -4, 0,
             4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128]
+
+def lvls_unif(width, bits):
+    return list(range(-2**(bits-1)-1,2**(bits-1),width))
 
 def lvls_centered():
     return [-128, -95, -63, -47, -39, -32, -27, -23, -15, 0, 15, 23, 27, 32, 39, 47, 63, 95, 128]
@@ -409,7 +479,7 @@ def spike_det_lc(series, dt, count):
     o = Timeseries("sDETlc")
     i = count
 
-    print(">>", series.data[:10])
+    # print(">>", series.data[:10])
 
     data = [d for d in series.data if d != 0]
     time = [t for t,d in zip(series.time, series.data) if d != 0]
@@ -439,9 +509,39 @@ def lc_aso(series, lvls):
 
 
 def oversample(series, order):
-    o = Timeseries(f"Overs.{order}")
+    o = Timeseries(f"Sx{order}")
     o.f_Hz = series.f_Hz*order
     f = interpolate.interp1d(series.time, series.data)
     o.time = np.arange( series.time[0], series.time[-1], 1/o.f_Hz )
     o.data = f(o.time)
     return o
+
+
+
+def compute_sdr(original_signal, new_signal, interpolate=False):
+
+    # If interpolation is enabled, interpolate the new signal
+    if interpolate:
+        # Interpolate the new signal to match the length of the original signal
+        interpolated_new_signal = np.interp(
+            np.arange(len(original_signal)),
+            np.arange(0, len(original_signal), len(original_signal) / len(new_signal)),
+            new_signal
+        )
+    else:
+        # Otherwise, use sample-and-hold
+        interpolated_new_signal = np.repeat(new_signal, len(original_signal) // len(new_signal))
+        interpolated_new_signal = np.resize(interpolated_new_signal, len(original_signal))
+
+    # Compute the power of the original signal and the distortion
+    power_original_signal = np.sum(np.square(original_signal))
+    power_distortion = np.sum(np.square(original_signal - interpolated_new_signal))
+
+    # Ensure non-zero power_distortion to avoid division by zero
+    if power_distortion == 0:
+        raise ValueError("Power of distortion should be non-zero for SDR computation.")
+
+    # Compute the SDR in dB
+    sdr = 10 * np.log10(power_original_signal / power_distortion)
+
+    return sdr

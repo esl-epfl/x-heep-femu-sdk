@@ -66,6 +66,8 @@ if demo:
     if 0:
         FROM_S  = 57
         TO_S    = 60
+        FROM_S  = 0.88
+        TO_S    = 0.89
 
         start   = int(FROM_S*f_Hz)
         end     = int(TO_S*f_Hz)
@@ -105,7 +107,7 @@ if demo:
 
     ''' Normalize the data '''
     raw = norm(raw, BITS_N)
-    add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # add_step(raw, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     '''```````````````````````````````````````
             MEAN SUBTRACTION
@@ -128,7 +130,7 @@ if demo:
 
     ''' Normalize the data '''
     meand = norm(meand, BITS_N)
-    add_step(meand, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # add_step(meand, 0.3) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
     '''```````````````````````````````````````
@@ -173,7 +175,7 @@ if demo:
     ''' Oversample to simulate analog signal '''
     analog = lpfd
     analog = oversample(lpfd, 20)
-    # add_step(analog, 1) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    add_step(analog, 0.5) #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     ''' Level-crosing with debouncing'''
     if filename == EPIPHONE :lvls = lvls_pwr2()
@@ -256,7 +258,7 @@ if demo:
                 g_truth = f.readlines()
 
             g_truth = [float(f) for f in g_truth]
-            [ plt.axvline(l, color='g', linestyle=':', alpha=0.5, linewidth=2  ) for l in g_truth ]
+            [ plt.axvline(l, color='lightgreen', linestyle='dotted', alpha=1, linewidth=5  ) for l in g_truth ]
 
 
             if 1:
@@ -266,7 +268,7 @@ if demo:
                 th = lvls[mid+lvl_offset]
 
                 spk = spike_det_dt( as2o_nd, th )
-                [ plt.axvline(l, color='r', linestyle=':', alpha=0.5  ) for l in spk.time ]
+                # [ plt.axvline(l, color='r', linestyle=':', alpha=0.5  ) for l in spk.time ]
 
 
                 ''' Detection through LC counts'''
@@ -280,10 +282,10 @@ if demo:
                 foms = []
 
                 # These were the best results for one experiment
-                counts = [5]
-                dt_is = [300e-6]
-                # counts = np.arange( 2,20, 1)
-                # dt_is = np.arange( 10e-6, 50e-6, 5e-6)
+                counts = [4]
+                dt_is = [400e-6]
+                # counts = np.arange( 3,6, 1)
+                # dt_is = np.arange( 200e-6, 501e-6, 5e-6)
 
                 for count in counts:
                     senss_d = []
@@ -292,33 +294,48 @@ if demo:
                     for dt_i in dt_is:
 
                         spk = spike_det_lc( lcrt, dt_i, count )
+
+                        #filter
+                        spks = Timeseries("spikes")
+                        for s in range(1,len(spk.time)):
+                            if spk.time[s]-spk.time[s-1] > dt_i:
+                                spks.time.append(spk.time[s])
+
+                        spk = spks
+
                         sens = 0
                         spec = 0
                         if len(spk.time) != 0:
                             '''comparison'''
-                            det = 0
+                            tp = 0
                             for gt in g_truth:
                                 for ds in spk.time:
                                     if np.abs(ds-gt) < dt_i*count*20:
-                                        det += 1
+                                        tp += 1
                                         break
 
                             total = len(g_truth)
-                            sens = det/total
+                            sens = tp/total
 
-                            det = 0
-                            for ds in spk.time:
-                                for gt in g_truth:
-                                    if np.abs(ds-gt) < dt_i*count*20:
-                                        det += 1
-                                        break
-                            fa = len(spk.time) - det
-                            spec = 1- fa/len(spk.time)
+                            # det = 0
+                            # for ds in spk.time:
+                            #     for gt in g_truth:
+                            #         if np.abs(ds-gt) < dt_i*count*20:
+                            #             det += 1
+                            #             break
+
+                            fp = len(spk.time) - tp
+                            fn = total - tp
+                            print(tp, fp, fn, tp, total, len(spk.time))
+
+                            acc = tp/(tp+fp+fn) # Hardware evaluation of spike detection algorithms towards wireless brain machine interfaces
+
+                            spec = 1- fp/len(spk.time)
                             fom = sens*spec
                         senss_d.append(sens)
                         specs_d.append(spec)
                         foms_d.append(fom)
-                        print(f"{count}\tchanges in {dt_i*1e6:.2f}us\t=> SENSITIVITY: {sens:.2f}\t||\tSPECIFICITY: {spec:.2f}\t||\t FOM: {fom:.2f}")
+                        print(f"{count}\tchanges in {dt_i*1e6:.2f}us\t > SENSITIVITY: {sens:.2f}\t||\tSPECIFICITY: {spec:.2f}\t||\t acc: {acc:.2f}")
                     senss.append(senss_d)
                     specs.append(specs_d)
                     foms.append(foms_d)
@@ -327,7 +344,7 @@ if demo:
                 specs = np.asarray(specs)
                 foms = np.asarray(foms)
 
-                [ plt.axvline(l, color='r', linestyle=':', alpha=0.5  ) for l in spk.time ]
+                [ plt.axvline(l, color='r', linestyle='solid', alpha=0.3, linewidth=5  ) for l in spk.time ]
 
         except FileNotFoundError:
             pass
@@ -337,38 +354,40 @@ if demo:
 
     ```````````````````````````````````````'''
 
-    if 0:
+    if 1:
         if filename == BIOPAC:
             ax.set_xlim(50, 60)
         if filename == EPIPHONE:
             ax.set_xlim(57, 59)
         if filename == JACKSON:
-            ax.set_xlim(0.75,0.775)
+            ax.set_xlim(0.8817, 0.8830)
+            # ax.set_xlim(0.76,0.89)
             # ax.set_xlim(0, 0.001)
 
     ax.set_yticks(lvls)
     # ax.set_ylim(-32,32)
     # ax.set_ylim(min(lvls), max(lvls))
-    plt.legend(processes)
+    # plt.legend(processes)
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude (God knows)")
     plt.title(f"Signal from {filename}")
     [ plt.axhline(l, color='k', linestyle=':', alpha=0.2 ) for l in lvls ]
 
-    if len( counts )  > 1:
-        import plotly.graph_objects as go
-        from plotly.subplots import make_subplots
-        from typing import Tuple, Iterable
+    if 0: #plot the sens/spec surfaces
+        if len( counts )  > 1:
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+            from typing import Tuple, Iterable
 
-        X, Y = np.meshgrid(dt_is, counts)
-        fig = make_subplots(rows=1, cols=1, specs=[[{'type': 'surface'}]])
-        surface = go.Surface(x=X, y=Y, z=np.asarray(senss), colorscale='Reds', showscale=False)
-        fig.add_trace(surface, row=1, col=1)
-        surface = go.Surface(x=X, y=Y, z=np.asarray(specs), colorscale='Greens', showscale=False)
-        fig.add_trace(surface, row=1, col=1)
-        surface = go.Surface(x=X, y=Y, z=np.asarray(foms), colorscale='Blues', showscale=False)
-        fig.add_trace(surface, row=1, col=1)
-        fig.show()
+            X, Y = np.meshgrid(dt_is, counts)
+            fig = make_subplots(rows=1, cols=1, specs=[[{'type': 'surface'}]])
+            surface = go.Surface(x=X, y=Y, z=np.asarray(senss), colorscale='Reds', showscale=False)
+            fig.add_trace(surface, row=1, col=1)
+            surface = go.Surface(x=X, y=Y, z=np.asarray(specs), colorscale='Greens', showscale=False)
+            fig.add_trace(surface, row=1, col=1)
+            surface = go.Surface(x=X, y=Y, z=np.asarray(foms), colorscale='Blues', showscale=False)
+            fig.add_trace(surface, row=1, col=1)
+            fig.show()
 
     plt.show()
 
