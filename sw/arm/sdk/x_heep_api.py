@@ -58,7 +58,9 @@ class x_heep(Overlay):
             # Handle errors raised by the command
             print("Command failed with return code", e.returncode, "and error output:", e.stderr)
 
-    def run_app(self):
+    def run_app(self, verbose=True):
+        # Start a background thread that reads from the UART
+        t, sf = self.thread_start(verbose)
         # Run the command and capture the output
         result = subprocess.run("/home/xilinx/x-heep-femu-sdk/sw/arm/sdk/run_app.sh",
                                     shell=True,
@@ -70,6 +72,8 @@ class x_heep(Overlay):
         error_output = result.stderr
         if result.returncode != 0: print("❌ Return FAILED:",result.returncode,"\n", error_output, output)
         else: print("✅ Return SUCCESS\n", output)
+        # Stop the background thread that reads from the UART
+        self.thread_stop(t, sf)
         return output, error_output
 
     def thread_process_uart_read(self, stop_event, verbose):
@@ -154,7 +158,7 @@ class x_heep(Overlay):
         byte_array = bytearray(flash)
         file.write(byte_array)
         file.close()
-    
+
     def init_virtual_adc(self, size_4B):
 
         # Allocate Virtual ADC DDR buffer
@@ -194,7 +198,7 @@ class x_heep(Overlay):
         virtual_adc.write(0x30, 0x1)                            # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
 
     # def ddr_buffer_thread_start():
-        
+
 
     def init_adc_mem(self):
 
