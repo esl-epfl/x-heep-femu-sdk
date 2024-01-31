@@ -8,34 +8,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "gpio.h"
-#include "core_v_mini_mcu.h"
 
+#include "perf.h"
 #include "vadc.h"
 #include "definitions.h"
 
-#if ENABLE_PRINTF
-    #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
-#else
-    #define PRINTF(...)
-#endif
-
-gpio_params_t gpio_params;
-gpio_t gpio;
-gpio_result_t gpio_res;
 uint32_t data[INPUT_DATA_LENGTH];
-
-static inline void perf_start(){
-    gpio_params.base_addr = mmio_region_from_addr((uintptr_t)GPIO_AO_START_ADDRESS);
-    gpio_res = gpio_init(gpio_params, &gpio);
-
-    gpio_res = gpio_output_set_enabled(&gpio, 1, true);
-    gpio_write(&gpio, 1, true);
-}
-
-static inline void perf_stop(){
-    gpio_write(&gpio, 1, false);
-}
 
 /**
  * This functions takes the data and returns two values:
@@ -45,40 +23,21 @@ static inline void perf_stop(){
  * HPF: The original signal, subtracted the moving-mean.
 */
 static inline void lpf_hpf(){
-    // uint8_t bits = 5;
-    // uint32_t m  = data[0];
-    // uint32_t mb = m << bits;
+    uint8_t bits = 5;
+    uint32_t m  = data[0];
+    uint32_t mb = m << bits;
     uint32_t x = 0;
-    // uint32_t h = 0;
-    // uint32_t l = m;
-    // PRINTF("%sLPF %s HPF %s IN\n",OUTPUT_START_SEQ, OUTPUT_DIVIDER, OUTPUT_DIVIDER);
-    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
-        x = data[i];
+    uint32_t h = 0;
+    uint32_t l = m;
+
+    for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
+        x = data[i];        // The current value to compute the mean
+        mb -= m;            // 4*mean without the last value
+        mb += x;            // 4*mean with the new value
+        m = mb >> bits;     // The new mean (4*mean/4)
+        h = l - m;          // The new HPFd value (signal - mean)
+        l = x;              // The value of data[i-1] for the next iteration
     }
-    // for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
-    //     x = data[i];        // The current value to compute the mean
-    //     mb -= m;            // 4*mean without the last value
-    //     mb += x;            // 4*mean with the new value
-    //     m = mb >> bits;     // The new mean (4*mean/4)
-    //     h = l - m;          // The new HPFd value (signal - mean)
-    //     l = x;              // The value of data[i-1] for the next iteration
-    //     PRINTF("%02d\n",x);
-    // }
-}
-
-static inline void write_result(){
-    // Sequence header
-    PRINTF("%sIN\n",OUTPUT_START_SEQ);
-
-    // Data to send
-    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
-        PRINTF("%02d\n", data[i]);
-    }
-
-    // Sequence tail
-    PRINTF("%s\n",OUTPUT_END_SEQ);
-
-    return;
 }
 
 int main(int argc, char *argv[])
@@ -99,7 +58,7 @@ int main(int argc, char *argv[])
     perf_stop();
 
     // Send back the result.
-    write_result();
+    write_result(data, INPUT_DATA_LENGTH);
 
     return EXIT_SUCCESS;
 
