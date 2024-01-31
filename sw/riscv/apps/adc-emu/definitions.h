@@ -1,7 +1,7 @@
 #ifndef _DEFINITIONS_H
 #define _DEFINITIONS_H
 
-#define INPUT_DATA_LENGTH 	801
+#define INPUT_DATA_LENGTH 	2501
 #define ENABLE_PRINTF 	1
 #define OUTPUT_START_SEQ 	"# "
 #define OUTPUT_DIVIDER 	"|"

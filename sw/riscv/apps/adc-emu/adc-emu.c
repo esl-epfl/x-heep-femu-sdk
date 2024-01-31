@@ -77,7 +77,7 @@ void read_from_flash(spi_host_t *SPI, dma_t *DMA, uint32_t *data, uint32_t byte_
     });
 
     // Address command
-    uint32_t addr_cmd = REVERT_32b_ADDR(0x00000004);
+    uint32_t addr_cmd = REVERT_32b_ADDR(0x00000000);
     uint32_t cmd_address = spi_create_command((spi_command_t){
         .len       = 3,
         .csaat     = true,
@@ -88,7 +88,7 @@ void read_from_flash(spi_host_t *SPI, dma_t *DMA, uint32_t *data, uint32_t byte_
     // Dummy command
     uint32_t dummy_cmd = 0x00;
     uint32_t cmd_dummy = spi_create_command((spi_command_t){
-        .len       = 0,
+        .len       = 1,
         .csaat     = true,
         .speed     = kSpiSpeedStandard,
         .direction = kSpiDirTxOnly
@@ -184,7 +184,7 @@ void vadc_init()
         .direction  = kSpiDirTxOnly
     });
 
-    const uint32_t set_dummy_cycle = 0x07;
+    const uint32_t set_dummy_cycle = 15U;
     const uint32_t cmd_bridge_value = spi_create_command((spi_command_t){
         .len        = 0,
         .csaat      = false,
@@ -212,14 +212,14 @@ void vadc_init()
     spi_write_word(&spi_host_flash, write_reg2_cmd);
     spi_set_command(&spi_host_flash, cmd_bridge);
     spi_wait_for_ready(&spi_host_flash);
-    spi_write_word(&spi_host_flash, 0x00);
+    spi_write_word(&spi_host_flash, 0x00); // 0xFF
     spi_set_command(&spi_host_flash, cmd_bridge_value);
     spi_wait_for_ready(&spi_host_flash);
 
     spi_write_word(&spi_host_flash, write_reg3_cmd);
     spi_set_command(&spi_host_flash, cmd_bridge);
     spi_wait_for_ready(&spi_host_flash);
-    spi_write_word(&spi_host_flash, 0x04);
+    spi_write_word(&spi_host_flash, 0x04); // 0x03
     spi_set_command(&spi_host_flash, cmd_bridge_value);
     spi_wait_for_ready(&spi_host_flash);
 }
@@ -244,23 +244,28 @@ static inline void perf_stop(){
  * HPF: The original signal, subtracted the moving-mean.
 */
 static inline void lpf_hpf(){
-    uint8_t bits = 5;
-    uint32_t m  = data[0];
-    uint32_t mb = m << bits;
+    // uint8_t bits = 5;
+    // uint32_t m  = data[0];
+    // uint32_t mb = m << bits;
     uint32_t x = 0;
-    uint32_t h = 0;
-    uint32_t l = m;
-    PRINTF("%sLPF %s HPF %s IN\n",OUTPUT_START_SEQ, OUTPUT_DIVIDER, OUTPUT_DIVIDER);
-    for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
-        x = data[i];        // The current value to compute the mean
-        mb -= m;            // 4*mean without the last value
-        mb += x;            // 4*mean with the new value
-        m = mb >> bits;     // The new mean (4*mean/4)
-        h = l - m;          // The new HPFd value (signal - mean)
-        l = x;              // The value of data[i-1] for the next iteration
-        PRINTF("%02d %s %02d %s %02d\n", m, OUTPUT_DIVIDER, h, OUTPUT_DIVIDER, x);
+    // uint32_t h = 0;
+    // uint32_t l = m;
+    // PRINTF("%sLPF %s HPF %s IN\n",OUTPUT_START_SEQ, OUTPUT_DIVIDER, OUTPUT_DIVIDER);
+    PRINTF("%sIN\n",OUTPUT_START_SEQ); // Header
+    for(uint32_t i = 0; i < INPUT_DATA_LENGTH; i++){
+        x = data[i];
+        PRINTF("%02d\n",x);
     }
-    PRINTF("%s\n",OUTPUT_END_SEQ);
+    // for(uint32_t i = 1; i < INPUT_DATA_LENGTH; i++){
+    //     x = data[i];        // The current value to compute the mean
+    //     mb -= m;            // 4*mean without the last value
+    //     mb += x;            // 4*mean with the new value
+    //     m = mb >> bits;     // The new mean (4*mean/4)
+    //     h = l - m;          // The new HPFd value (signal - mean)
+    //     l = x;              // The value of data[i-1] for the next iteration
+    //     PRINTF("%02d\n",x);
+    // }
+    PRINTF("%s\n",OUTPUT_END_SEQ); // Tail
 }
 
 
