@@ -102,7 +102,7 @@ static struct
 /**                                                                        **/
 /****************************************************************************/
 
-inline void perf_start(){
+void perf_start(){
     gpio_result_t gpio_res;
 
     perf_cb.gpio_params.base_addr = mmio_region_from_addr((uintptr_t)GPIO_AO_START_ADDRESS);
@@ -112,11 +112,11 @@ inline void perf_start(){
     gpio_write(&perf_cb.gpio, 1, true);
 }
 
-inline void perf_stop(){
+void perf_stop(){
     gpio_write(&perf_cb.gpio, PERF_GPIO, false);
 }
 
-inline void write_result(uint32_t* data, uint32_t size){
+void write_result(uint32_t* data, uint32_t size){
     
     // Sequence header
     PRINTF("%sIN\n",OUTPUT_START_SEQ);

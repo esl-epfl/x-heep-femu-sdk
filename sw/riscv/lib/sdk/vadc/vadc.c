@@ -188,7 +188,6 @@ void vadc_init()
     CSR_SET_BITS(CSR_REG_MSTATUS, 0x8);
     uint32_t mask = 1 << 19;
     CSR_SET_BITS(CSR_REG_MIE, mask);
-    vadc_cb.dma_intr_flag = 0;
     CSR_SET_BITS(CSR_REG_MIE, mask);
 
     vadc_cb.spi_host_flash.base_addr = mmio_region_from_addr((uintptr_t)SPI_HOST_START_ADDRESS);
@@ -274,6 +273,7 @@ void vadc_get_data_dma(uint32_t *data, uint32_t byte_count)
     dma_set_write_ptr(&vadc_cb.dma, (uint32_t) data);
     dma_set_spi_mode(&vadc_cb.dma, (uint32_t) 1);
     dma_set_data_type(&vadc_cb.dma, (uint32_t) 0);
+    vadc_cb.dma_intr_flag = 0;
     dma_set_cnt_start(&vadc_cb.dma, (uint32_t) byte_count);
 
     // Read command
@@ -295,7 +295,7 @@ void vadc_get_data_dma(uint32_t *data, uint32_t byte_count)
     });
 
     // Dummy command
-    uint32_t dummy_cmd = 0x00;
+    uint32_t dummy_cmd = 0x00000000;
     uint32_t cmd_dummy = spi_create_command((spi_command_t){
         .len       = 1,
         .csaat     = true,
