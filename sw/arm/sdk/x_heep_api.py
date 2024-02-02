@@ -198,45 +198,37 @@ class x_heep(Overlay):
         ddr_producer = 1
         virtual_adc.write(0x28, ddr_producer)
 
-        # Processing
+        # Buffer control
         while (not stop_event.is_set()) and (end_of_file ==  0):
             ddr_consumer = virtual_adc.read(0x18)
 
             if( ddr_consumer > ddr_producer + 1 ): # Case 1
                 
-                gap_64words = ddr_consumer - ddr_producer - 1
+                gap_32words = (ddr_consumer - ddr_producer - 1) * 2
 
-                file_byte = list(file.read(gap_64words * 8))
-                if ( len(file_byte) < (gap_64words * 8) ):
+                file_byte = list(file.read(gap_32words * 4))
+                if ( len(file_byte) < (gap_32words * 4) ):
                     end_of_file = 1
-                    gap_64words = math.ceil(len(file_byte)/8)
-                    file_byte.append(0)
-                    file_byte.append(0)
-                    file_byte.append(0)
-                    file_byte.append(0)
+                    gap_32words = int(len(file_byte)/4)
 
-                for i in range(gap_64words * 2):
+                for i in range(gap_32words):
                     DDR_buffer[ddr_producer * 2 + i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
                 
-                ddr_producer = ddr_producer + gap_64words
+                ddr_producer = ddr_producer + math.ceil(gap_32words/2)
 
             elif ( ddr_consumer < ddr_producer + 1 ):
-                gap_64words = DDR_buffer_size_64B - ddr_producer
+                gap_32words = (DDR_buffer_size_64B - ddr_producer)*2
                 if (ddr_consumer == 0):
-                    gap_64words = gap_64words - 1
+                    gap_32words = gap_32words - 2
 
-                if (gap_64words > 0):
+                if (gap_32words > 0):
 
-                    file_byte = list(file.read(gap_64words * 8))
-                    if ( len(file_byte) < (gap_64words * 8) ):
+                    file_byte = list(file.read(gap_32words * 4))
+                    if ( len(file_byte) < (gap_32words * 4) ):
                         end_of_file = 1
-                        gap_64words = math.ceil(len(file_byte)/8)
-                        file_byte.append(0)
-                        file_byte.append(0)
-                        file_byte.append(0)
-                        file_byte.append(0)
+                        gap_32words = int(len(file_byte)/4)
 
-                    for i in range(gap_64words * 2):
+                    for i in range(gap_32words):
                         DDR_buffer[ddr_producer * 2 + i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
                     
                     if(ddr_consumer == 0):
@@ -244,23 +236,19 @@ class x_heep(Overlay):
                     else:
                         ddr_producer = 0
 
-                        gap_64words = ddr_consumer - 1
+                        gap_32words = (ddr_consumer - 1)*2
 
-                        file_byte = list(file.read(gap_64words * 8))
-                        if ( len(file_byte) < (gap_64words * 8) ):
+                        file_byte = list(file.read(gap_32words * 4))
+                        if ( len(file_byte) < (gap_32words * 4) ):
                             end_of_file = 1
-                            gap_64words = math.ceil(len(file_byte)/8)
-                            file_byte.append(0)
-                            file_byte.append(0)
-                            file_byte.append(0)
-                            file_byte.append(0)
+                            gap_32words = int(len(file_byte)/4)
 
-                        for i in range(gap_64words * 2):
+                        for i in range(gap_32words):
                             DDR_buffer[ddr_producer * 2 + i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
 
-                        ddr_producer = ddr_producer + gap_64words
+                        ddr_producer = ddr_producer + math.ceil(gap_32words/2)
 
-            gap_64words = 0
+            gap_32words = 0
             virtual_adc.write(0x28, ddr_producer)
 
         file.close()
