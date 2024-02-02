@@ -265,11 +265,19 @@ class x_heep(Overlay):
 
         file.close()
     
-    def ddr_buffer_thread_start(self, virtual_adc, bin_file_name, DDR_buffer, DDR_buffer_size_64B):
-        stop_flag = threading.Event()   # Create a stop flag to halt the process later
+    def virtual_adc_thread_start(self, bin_file_name, DDR_buffer_size_64B=512):
+        # Create a stop flag to halt the process later
+        stop_flag = threading.Event()
+        
+        # Create and program the virtual ADC controller in the PL
+        virtual_adc, self.DDR_buffer = self.init_virtual_adc(DDR_buffer_size_64B)
+
         # Create the thread running the selected process
-        thread = threading.Thread( target=self.ddr_circular_buffer_thread,  args=(stop_flag, virtual_adc, bin_file_name, DDR_buffer, DDR_buffer_size_64B) )
-        thread.start() # Launch the thread
+        thread = threading.Thread( target=self.ddr_circular_buffer_thread,  args=(stop_flag, virtual_adc, bin_file_name, self.DDR_buffer, DDR_buffer_size_64B) )
+
+        # Launch the thread
+        thread.start()
+
         return thread, stop_flag
 
     def init_adc_mem(self):
