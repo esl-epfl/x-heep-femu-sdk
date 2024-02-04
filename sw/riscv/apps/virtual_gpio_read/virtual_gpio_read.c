@@ -14,16 +14,16 @@ int main(int argc, char *argv[])
     
     //Start writing to GPIO of Always-On Peripheral [7:0]
     gpio_params.base_addr = mmio_region_from_addr((uintptr_t)GPIO_AO_START_ADDRESS);
+    bool read_from_pin;
     
     for (int i=2; i < 8; i++){ //Skip first 2 GPIO's since they are alread used
         gpio_res = gpio_init(gpio_params, &gpio);
-        gpio_res = gpio_output_set_enabled(&gpio, i, true);
-        if (i % 2 == 0){
-            gpio_write(&gpio, i, true);
-            printf("Written true to pin %i \n", i);
-        }else{
-            gpio_write(&gpio, i, false);
-            printf("Written false to pin %i \n", i);
+        gpio_res = gpio_input_enabled(&gpio, i, true);
+        gpio_res = gpio_read(&gpio, i, &read_from_pin);
+        if (read_from_pin != 1){
+            printf("An element does not match!");
+            printf("Not matching at GPIO-AO at pin %d", i);
+            return EXIT_FAILURE;
         }
     }
     
@@ -32,16 +32,16 @@ int main(int argc, char *argv[])
     
     for (int i=8; i < 32; i++){
         gpio_res = gpio_init(gpio_params, &gpio);
-        gpio_res = gpio_output_set_enabled(&gpio, i, true);
-        if (i % 2 == 0){
-            gpio_write(&gpio, i, true);
-            printf("Written true to pin %i \n", i);
-        }else{
-            gpio_write(&gpio, i, false);
-            printf("Written false to pin %i \n", i);
+        gpio_res = gpio_input_enabled(&gpio, i, true);
+        gpio_res = gpio_read(&gpio, i, &read_from_pin);
+        if (read_from_pin != 1){
+            printf("An element does not match!");
+            printf("Not matching at GPIO at pin %d", i);
+            return EXIT_FAILURE;
         }
     }
-    printf("Write operation successful.");
+    
+    printf("Read operation successful.");
 
     return EXIT_SUCCESS;
 }
