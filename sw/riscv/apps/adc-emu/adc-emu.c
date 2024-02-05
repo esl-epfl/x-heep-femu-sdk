@@ -29,12 +29,13 @@ static inline void lpf_hpf(uint32_t *input, uint32_t size){
     uint32_t l = m;
 
     for(uint32_t i = 1; i < size; i++){
-        x = input[i];        // The current value to compute the mean
+        x = input[i];       // The current value to compute the mean
         mb -= m;            // 4*mean without the last value
         mb += x;            // 4*mean with the new value
         m = mb >> bits;     // The new mean (4*mean/4)
         h = l - m;          // The new HPFd value (signal - mean)
         l = x;              // The value of data[i-1] for the next iteration
+        input[i] = m;       // Store in the input the value of its mean
     }
 }
 
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 
     // Start the performance counters to report timing and energy
     perf_start();
-    
+
     // Init the virtual ADC
     vadc_init();
 

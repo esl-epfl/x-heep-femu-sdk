@@ -90,7 +90,7 @@ static struct
     gpio_params_t gpio_params;
 
     /**
-    * GPIO 
+    * GPIO
     */
     gpio_t gpio;
 
@@ -117,9 +117,9 @@ void perf_stop(){
 }
 
 void write_result(uint32_t* data, uint32_t size){
-    
+
     // Sequence header
-    PRINTF("%sIN\n",OUTPUT_START_SEQ);
+    PRINTF("%sOUT\n",OUTPUT_START_SEQ);
 
     // Data to send
     for(uint32_t i = 0; i < size; i++){
