@@ -13,6 +13,7 @@ import csv
 import subprocess
 import serial
 import threading
+import math
 
 ADC_OFFSET = 0x40000000
 FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x44A00000
@@ -159,11 +160,11 @@ class x_heep(Overlay):
         file.write(byte_array)
         file.close()
 
-    def init_virtual_adc(self, size_4B):
+    def init_virtual_adc(self, size_8B):
 
         # Allocate Virtual ADC DDR buffer
         # The size is in 32 bit words, meaning that 4*size bytes will ber reserved
-        DDR_buffer = allocate(shape=(size_4B,), dtype='u4')
+        DDR_buffer = allocate(shape=(size_8B*2,), dtype='u4')
         # Reset all values to 0
         DDR_buffer[:] = 0
 
@@ -171,34 +172,105 @@ class x_heep(Overlay):
         virtual_adc = MMIO(VIRTUAL_ADC_OFFSET, 64*1024) # Size mapped by Vivado
 
         # Reset all values to default
-        virtual_adc.write(0x10, size_4B)                        # DDR_SIZE_BUFFER     0x10/4 (WRITE) (32-bits word)
-        # virtual_adc.write(0x18, )                             # DDR_CONS_ADDR       0x18/4 (READ)
-        # virtual_adc.write(0x1C, )                             # DDR_CONS_ADDR_CTRL  0x1C/4 (READ) // Valid (bit 0)
+        virtual_adc.write(0x10, size_8B)                        # DDR_SIZE_BUFFER     0x10/4 (WRITE) // 64-bits word
+        # virtual_adc.read(0x18)                                # DDR_CONS_ADDR       0x18/4 (READ)
+        # virtual_adc.read(0x1C)                                # DDR_CONS_ADDR_CTRL  0x1C/4 (READ) // Valid (bit 0)
         virtual_adc.write(0x28, 0)                              # DDR_PROD_ADDR       0x28/4 (WRITE)
         virtual_adc.write(0x30, 0)                              # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
         virtual_adc.write(0x38, DDR_buffer.physical_address)    # DDR_MASTER_OFF_1    0x38/4 (WRITE)
         virtual_adc.write(0x3C, 0)                              # DDR_MASTER_OFF_2    0x3C/4 (WRITE)
         virtual_adc.write(0x44, 0)                              # ADC_ERROR_I         0x44/4 (WRITE)
-        # virtual_adc.write(0x4C, )                             # ADC_ERROR_O         0x4C/4 (READ)
-        # virtual_adc.write(0x50, )                             # ADC_ERROR_CTL       0x50/4 (READ)
+        virtual_adc.write(0x30, 1)                              # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
+        # virtual_adc.read(0x4C)                                # ADC_ERROR_O         0x4C/4 (READ)
+        # virtual_adc.read(0x50)                                # ADC_ERROR_CTL       0x50/4 (READ)
 
         return virtual_adc, DDR_buffer
 
-    def start_virtual_adc(self, virtual_adc, DDR_buffer, bin_file_name, size):
-        # Write Flash from binary file
+    def restart_virtual_adc(self, virtual_adc):
+        virtual_adc.write(0x30, 0)                              # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
+        virtual_adc.write(0x30, 1)                              # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
+
+    def ddr_circular_buffer_thread(self, stop_event, virtual_adc, bin_file_name, DDR_buffer, DDR_buffer_size_64B):
+        # variables
         file = open(bin_file_name, mode="rb")
-        file_byte = file.read()
-        # for i in range(int(len(file_byte)/4)):
-        for i in range(int(size)):
-            DDR_buffer[i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
+        end_of_file = 0
+        ddr_producer = 0
+        file_byte = list(file.read(8))
+        for i in range(8):
+                    DDR_buffer[ddr_producer * 2] = (file_byte[0] << 24) | (file_byte[0+1] << 16) | (file_byte[0+2] << 8) | file_byte[0+3]
+                    DDR_buffer[ddr_producer * 2 + 1] = (file_byte[0+4] << 24) | (file_byte[0+5] << 16) | (file_byte[0+6] << 8) | file_byte[0+7]
+        ddr_producer = 1
+        virtual_adc.write(0x28, ddr_producer)
+
+        # Buffer control
+        while (not stop_event.is_set()) and (end_of_file ==  0):
+            ddr_consumer = virtual_adc.read(0x18)
+
+            if( ddr_consumer > ddr_producer + 1 ): # Case 1
+
+                gap_32words = (ddr_consumer - ddr_producer - 1) * 2
+
+                file_byte = list(file.read(gap_32words * 4))
+                if ( len(file_byte) < (gap_32words * 4) ):
+                    end_of_file = 1
+                    gap_32words = int(len(file_byte)/4)
+
+                for i in range(gap_32words):
+                    DDR_buffer[ddr_producer * 2 + i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
+
+                ddr_producer = ddr_producer + math.ceil(gap_32words/2)
+
+            elif ( ddr_consumer < ddr_producer + 1 ):
+                gap_32words = (DDR_buffer_size_64B - ddr_producer)*2
+                if (ddr_consumer == 0):
+                    gap_32words = gap_32words - 2
+
+                if (gap_32words > 0):
+
+                    file_byte = list(file.read(gap_32words * 4))
+                    if ( len(file_byte) < (gap_32words * 4) ):
+                        end_of_file = 1
+                        gap_32words = int(len(file_byte)/4)
+
+                    for i in range(gap_32words):
+                        DDR_buffer[ddr_producer * 2 + i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
+
+                    if(ddr_consumer == 0):
+                        dr_producer = DDR_buffer_size_64B - 1
+                    else:
+                        ddr_producer = 0
+
+                        gap_32words = (ddr_consumer - 1)*2
+
+                        file_byte = list(file.read(gap_32words * 4))
+                        if ( len(file_byte) < (gap_32words * 4) ):
+                            end_of_file = 1
+                            gap_32words = int(len(file_byte)/4)
+
+                        for i in range(gap_32words):
+                            DDR_buffer[ddr_producer * 2 + i] = (file_byte[i*4] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3]
+
+                        ddr_producer = ddr_producer + math.ceil(gap_32words/2)
+
+            gap_32words = 0
+            virtual_adc.write(0x28, ddr_producer)
+
         file.close()
 
-        #Start Virtual ADC operation (@todo set proc addr accordin to the file length)
-        virtual_adc.write(0x28, size)                           # DDR_PROD_ADDR       0x28/4 (WRITE)
-        virtual_adc.write(0x30, 0x1)                            # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
+    def virtual_adc_thread_start(self, bin_file_name, DDR_buffer_size_64B=512):
+        # Create a stop flag to halt the process later
+        stop_flag = threading.Event()
 
-    # def ddr_buffer_thread_start():
+        # Create and program the virtual ADC controller in the PL
+        virtual_adc, self.DDR_buffer = self.init_virtual_adc(DDR_buffer_size_64B)
 
+        # Create the thread running the selected process
+        thread = threading.Thread( target=self.ddr_circular_buffer_thread,  args=(stop_flag, virtual_adc, bin_file_name, self.DDR_buffer, DDR_buffer_size_64B) )
+
+        # Launch the thread
+        thread.start()
+
+        return thread, stop_flag
 
     def init_adc_mem(self):
 
@@ -225,7 +297,8 @@ class x_heep(Overlay):
         file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/adc_in.bin", mode="rb")
         file_byte = file.read()
         for i in range(int(len(file_byte)/4)):
-            adc_mem.write(i*4, (file_byte[i*4+3] << 24) | (file_byte[i*4+2] << 16) | (file_byte[i*4+1] << 8) | file_byte[i*4])
+            # adc_mem.write(i*4, (file_byte[i*4+3] << 24) | (file_byte[i*4+2] << 16) | (file_byte[i*4+1] << 8) | file_byte[i*4])
+            adc_mem.write(i*4, (file_byte[i*4+0] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3])
         file.close()
 
 
