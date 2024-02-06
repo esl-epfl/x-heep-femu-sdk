@@ -159,6 +159,7 @@ def remove_module(modules, element_name):
         # Element found, subtract its total from the parent's total
         parent_total = modules.get("Total", 0)
         return {"Total": parent_total - modules.get("Total", 0)}
+        return None
 
     elif "submodules" in modules:
         # Recursively search in submodules
@@ -166,5 +167,7 @@ def remove_module(modules, element_name):
 
         # Update the total based on the modified submodules
         modules["Total"] = sum(submodule.get("Total", 0) for submodule in modules.get("submodules", []))
+        # print(f"Removing sub {element_name}")
 
+    # print(modules)
     return modules

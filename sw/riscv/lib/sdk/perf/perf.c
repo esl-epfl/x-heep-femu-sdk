@@ -119,7 +119,7 @@ void perf_stop(){
 void write_result(uint32_t* data, uint32_t size){
 
     // Sequence header
-    PRINTF("%sOUT\n",OUTPUT_START_SEQ);
+    PRINTF("%sOutput\n",OUTPUT_START_SEQ);
 
     // Data to send
     for(uint32_t i = 0; i < size; i++){
