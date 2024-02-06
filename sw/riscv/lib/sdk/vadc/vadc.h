@@ -65,7 +65,7 @@ typedef enum
      * Rounds the target frequency to its nearset value from below
     */
     CLK_BELOW,
-    
+
     /**
      * Rounds the target frequency to its nearset value from above
     */
@@ -99,11 +99,8 @@ void vadc_init();
 /**
  * @brief Initiates one continuous transactions with the virtual ADC through
  * the SPI using the DMA to trasfer the data to the memory.
- * @param SPI Pointer to the SPI controller 
- * @param DMA Pointer to the DMA controller 
- * @param data Pointer to where data will be collected from the virtual ADC
- * @param word_count Number of words to be trasfered
- * @param addr Base address of the Virtual ADC (BRAM)
+ * @param data_buffer Pointer to where data will be collected from the virtual ADC
+ * @param byte_count Number of bytes to be trasfered
  * @retval None
  */
 void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count);
