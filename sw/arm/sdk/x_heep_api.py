@@ -387,7 +387,7 @@ class x_heep(Overlay):
             perf_cnt_file.close()
 
 
-    def estimate_performance(self, verbose):
+    def estimate_performance(self, verbose=False):
 
         with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/build/perf_cnt.csv') as perf_cnt_file:
             perf_cnt_reader = csv.reader(perf_cnt_file, delimiter=',')
@@ -572,7 +572,7 @@ class x_heep(Overlay):
             perf_cnt_file.close()
 
 
-    def estimate_energy(self, cells, verbose):
+    def estimate_energy(self, cells, verbose=False):
 
         with open('/home/xilinx/x-heep-femu-sdk/sw/riscv/pwr_val/TSMC_65nm_' + cells + '_20MHz.csv') as power_values_file:
             power_values_reader = csv.reader(power_values_file, delimiter=',')

@@ -12,8 +12,8 @@ def report():
     FILES       = [ 'perf_estim', 'energy_estim'    ]
     KEYWORDS    = [ 'cycles'    , 'energy'          ]
     MERGING     = [ max         , sum               ]
-    ORDER       = [ 1           ,  1E6              ]
-    UNIT        = [ 's'         , 'µJ'              ]
+    ORDER       = [ 1e3           ,  1e6            ]
+    UNIT        = [ 'ms'         , 'µJ'              ]
     BREAKDOWN   = ['','']
 
     for filename, keyword, order, unit, op, metric in zip(FILES, KEYWORDS, ORDER, UNIT, MERGING, range(len(BREAKDOWN))):
@@ -88,7 +88,7 @@ def report():
     report = {
         'Energy_J'      : BREAKDOWN[1]['Total'],
         'Latency_s'     : BREAKDOWN[0]['Total'],
-        'Power_W'       : BREAKDOWN[1]['Total']/(BREAKDOWN[0]['Total']*ORDER[0])
+        'Power_W'       : BREAKDOWN[1]['Total']/(BREAKDOWN[0]['Total'])
     }
 
     with open( SDK_PATH + RISCV_PATH + "build/report.pkl", 'wb') as f:
