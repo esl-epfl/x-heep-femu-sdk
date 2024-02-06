@@ -59,6 +59,24 @@ extern "C" {
 /**                                                                        **/
 /****************************************************************************/
 
+typedef enum
+{
+    /**
+     * Rounds the target frequency to its nearset value from below
+    */
+    CLK_BELOW,
+
+    /**
+     * Rounds the target frequency to its nearset value from above
+    */
+    CLK_ABOVE,
+
+    /**
+     * Rounds the target frequency to its nearset value
+     */
+    CLK_NEAREST
+} clk_round_t;
+
 /****************************************************************************/
 /**                                                                        **/
 /**                          EXPORTED VARIABLES                            **/
@@ -72,22 +90,38 @@ extern "C" {
 /****************************************************************************/
 
 /**
- * @brief Initializes the virtual ADC through the SPI
+ * @brief Initializes the virtual ADC through the SPI. The clock frequency is
+ * set to the maximum by default
  * @retval None
  */
 void vadc_init();
 
 /**
- * @brief Initiates one continuous transactions with the virtual ADC through
- * the SPI using the DMA to trasfer the data to the memory.
- * @param SPI Pointer to the SPI controller 
- * @param DMA Pointer to the DMA controller 
- * @param data Pointer to where data will be collected from the virtual ADC
- * @param word_count Number of words to be trasfered
- * @param addr Base address of the Virtual ADC (BRAM)
+ * @brief Initializes the virtual ADC through the SPI. The clock frequency is
+ * set to the maximum by default
  * @retval None
  */
-void vadc_get_data_dma(uint32_t *data, uint32_t byte_count);
+void vadc_deinit();
+
+/**
+ * @brief Initiates one continuous transactions with the virtual ADC through
+ * the SPI using the DMA to trasfer the data to the memory.
+ * @param data_buffer Pointer to where data will be collected from the virtual ADC
+ * @param byte_count Number of bytes to be trasfered
+ * @retval None
+ */
+void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count);
+
+/**
+ * @brief Set the clk for the spi transactions with the spi. 
+ * @param target_freq Target clock frequency in Hz for the SPI communication
+ * with the virtual ADC
+ * @param round_type If the target frequency cannot be achieved, it will be
+ * set to the nearset frequency BELOW, ABOVE or NEAREST.
+ * @retval The actual clock frequency (in Hz) at with the virtual adc was
+ * configured
+ */
+uint32_t set_vadc_clk(uint32_t target_freq, clk_round_t round_type);
 
 /****************************************************************************/
 /**                                                                        **/
