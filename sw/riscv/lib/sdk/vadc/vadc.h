@@ -87,7 +87,7 @@ void vadc_init();
  * @param addr Base address of the Virtual ADC (BRAM)
  * @retval None
  */
-void vadc_get_data_dma(uint32_t *data, uint32_t byte_count);
+void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count);
 
 /****************************************************************************/
 /**                                                                        **/

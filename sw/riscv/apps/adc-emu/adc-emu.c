@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     vadc_init();
 
     // Obtain the data (simulating obtaining a buffer from the ADC)
-    vadc_get_data_dma(data_buffer, 4 * INPUT_DATA_LENGTH);
+    read_vadc_dma(data_buffer, 4 * INPUT_DATA_LENGTH);
 
     // Perform a LPF and HPF to the signal
     lpf_hpf(data_buffer, INPUT_DATA_LENGTH);
