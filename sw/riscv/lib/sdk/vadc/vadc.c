@@ -63,11 +63,6 @@
 #define VADC_BASE_ADDR REVERT_32b_ADDR(0x00000000)
 
 /**
- * The data to send when summy cycles are occuring
- */
-#define DUMMY_DATA 0x00000000
-
-/**
  * Number of waiting bytes (8 cycles) bewteen sending an address to the virtual
  * ADC and receiving the actual data. This delay is due to the SPI2AXI bridge.
  * It has been tested that a minimum number of wating cycles are 2 bytes.
@@ -211,37 +206,37 @@ typedef union{
  *  - Reg2: Lower bits of the wrap-around adress
  *  - Reg3: Upper bits of the wrap-around adress
  */
-static void set_vadc_config();
+static inline void set_vadc_config();
 
 /**
  * Controls the writing of a virtual ADC register through the SPI
  */
-static void reg_write_vadc(reg_read_vadc_cmd cmd, uint8_t value);
+static inline void reg_write_vadc(reg_read_vadc_cmd cmd, uint8_t value);
 
 /**
  * Generate SPI commands for the virtual ADC
  */
-static void create_spi_cmds();
+static inline void create_spi_cmds();
 
 /**
  * Set the SPI to communicate to the virtual ADC
  */
-static void set_spi_vadc_config();
+static inline void set_spi_vadc_config();
 
 /**
  * Set the SOC to use the SPI
  */
-static void set_soc_vadc_config();
+static inline void set_soc_vadc_config();
 
 /**
  * Set the DMA to capture the SPI data from the virtual ADC
  */
-static void set_dma_vadc_config();
+static inline void set_dma_vadc_config();
 
 /**
  * Set the DMA to transfer data comming form the virtual ADC
  */
-static void set_vadc_dma_transaction(uint32_t *data);
+static inline void set_vadc_dma_transaction(uint32_t *data, uint32_t byte_count);
 
 /**
  * The header of every virtual ADC transaction:
@@ -250,7 +245,7 @@ static void set_vadc_dma_transaction(uint32_t *data);
  * - Wating cycles (2 bytes)
  * This header is defined by the SPI2AXI bridge
  */
-static void vadc_read_header();
+static inline void vadc_read_header();
 
 /****************************************************************************/
 /**                                                                        **/
@@ -351,9 +346,14 @@ static struct
     uint32_t send_dummy_spi_cmd;
 
     /**
-    * Receive X bytes of data from the virtual ADC (end stransaction)
+    * Receive X bytes of data from the virtual ADC (keep stransaction)
     */
     uint32_t read_data_spi_cmd;
+
+    /**
+    * Sends a dummy byte and close the transaction (end stransaction)
+    */
+    uint32_t end_spi_cmd;
 
 }vadc_spi_cmds;
 
@@ -409,50 +409,54 @@ void handler_irq_fast_dma(void)
 
 void vadc_init()
 {
-    //Set the SOC to use the SPI
+    /**
+     * Set the SOC to use the SPI
+    */
     set_soc_vadc_config();
     
-    //Set the DMA to capture the SPI data from the virtual ADC
+    /**
+     * Set the DMA to capture the SPI data from the virtual ADC
+    */
     set_dma_vadc_config();
 
-    // Set the SPI to communicate to the virtual ADC
+    /**
+     * Set the SPI to communicate to the virtual ADC
+    */
+
     set_spi_vadc_config();
 
-    // Configure the virtual ADC throud the SPI
+    /**
+     * Configure the virtual ADC throud the SPI
+    */
+
     set_vadc_config();
+
+    /**
+     * Sending the header SPI transaction to the virtual ADC.
+     * This retains the the transaction activated (CSB = 1).
+    */
+    vadc_read_header();
 }
 
-/**
- * @todo separate init transaction and seding bytes
- * @todo remove wfi and move to the user level
-*/
+void vadc_deinit(){
+    spi_sw_reset(&vadc_cb.spi_host_vadc);
+}
+
 void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count)
 {
-    // -- VADC transaction configuraion -- //
-    
-    // Setting the DMA
-    set_vadc_dma_transaction(data_buffer);
-
-    // Receive data
+    // Start SPI transaction to receive data
     vadc_spi_cmds.read_data_spi_cmd = spi_create_command((spi_command_t){
         .len        = byte_count - 1,
-        .csaat      = false,
+        .csaat      = true,
         .speed      = kSpiSpeedStandard,
         .direction  = kSpiDirRxOnly
     });
-
-    // Sending the header SPI transaction to the virtual ADC
-    vadc_read_header();
-
-    // -- VADC transactions -- //
-
-    // Start SPI transaction
     spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.read_data_spi_cmd);
     spi_wait_for_ready(&vadc_cb.spi_host_vadc);
-    // Strart DMA transaction
-    dma_set_cnt_start(&vadc_cb.dma, (uint32_t) byte_count);
 
-    // -- Wait for transaction to be done -- //
+    // Start DMA transaction
+    // Setting the DMA
+    set_vadc_dma_transaction(data_buffer, byte_count);
 
     // Wait for virtual ADC transaction to be completed
     while(vadc_cb.dma_intr_flag == 0) {
@@ -516,7 +520,7 @@ uint32_t set_vadc_clk(uint32_t target_freq, clk_round_t round_type){
 /**                                                                        **/
 /****************************************************************************/
 
-void set_vadc_config(){
+static inline void set_vadc_config(){
     // Set the base address of the virtual ADC memory (BRAM)
     vadc_cb.vadc_addr = VADC_BASE_ADDR;
 
@@ -536,14 +540,14 @@ void set_vadc_config(){
     reg_write_vadc(WRITE_REG3_CMD, vadc_config.wrap_around.byte.high);
 }
 
-void reg_write_vadc(reg_read_vadc_cmd cmd, uint8_t value){
+static inline void reg_write_vadc(reg_read_vadc_cmd cmd, uint8_t value){
     uint16_t full_cmd = CONCAT_TX_CMD(cmd,value);
     spi_write_word(&vadc_cb.spi_host_vadc, (uint32_t) full_cmd);
     spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.write_reg_spi_cmd);
     spi_wait_for_ready(&vadc_cb.spi_host_vadc);
 }
 
-void create_spi_cmds(){
+static inline void create_spi_cmds(){
 
     /**
     * SPI command to Write/Read command to the virtual ADC through the SPI
@@ -589,10 +593,17 @@ void create_spi_cmds(){
                                                                         .csaat      = true,
                                                                         .speed      = kSpiSpeedStandard,
                                                                         .direction  = kSpiDirTxOnly
-                                                                    });    
+                                                                    });
+
+    vadc_spi_cmds.end_spi_cmd                    = spi_create_command((spi_command_t){
+                                                                        .len        = 0,
+                                                                        .csaat      = false,
+                                                                        .speed      = kSpiSpeedStandard,
+                                                                        .direction  = kSpiDirTxOnly
+                                                                    });
 }
 
-void set_spi_vadc_config(){
+static inline void set_spi_vadc_config(){
     // Set SPI bas address
     vadc_cb.spi_host_vadc.base_addr = mmio_region_from_addr((uintptr_t)SPI_HOST_START_ADDRESS);
     spi_set_enable(&vadc_cb.spi_host_vadc, true);
@@ -607,13 +618,13 @@ void set_spi_vadc_config(){
     create_spi_cmds();
 }
 
-void set_soc_vadc_config(){
+static inline void set_soc_vadc_config(){
     // Configure SOC
     vadc_cb.soc_ctrl.base_addr = mmio_region_from_addr((uintptr_t)SOC_CTRL_START_ADDRESS);
     soc_ctrl_select_spi_host(&vadc_cb.soc_ctrl);
 }
 
-void set_dma_vadc_config(){
+static inline void set_dma_vadc_config(){
     // Enable DMA fast interrupt
     CSR_SET_BITS(CSR_REG_MSTATUS, 0x8);
     uint32_t mask = 1 << 19;
@@ -624,7 +635,7 @@ void set_dma_vadc_config(){
     vadc_cb.dma.base_addr = mmio_region_from_addr((uintptr_t)DMA_START_ADDRESS);
 }
 
-void set_vadc_dma_transaction(uint32_t *data){
+static inline void set_vadc_dma_transaction(uint32_t *data, uint32_t byte_count){
     uint32_t *fifo_ptr_rx = vadc_cb.spi_host_vadc.base_addr.base + SPI_HOST_RXDATA_REG_OFFSET;
     dma_set_read_ptr_inc(&vadc_cb.dma, (uint32_t) 0);
     dma_set_write_ptr_inc(&vadc_cb.dma, (uint32_t) 4);
@@ -633,9 +644,10 @@ void set_vadc_dma_transaction(uint32_t *data){
     dma_set_spi_mode(&vadc_cb.dma, (uint32_t) 1);
     dma_set_data_type(&vadc_cb.dma, (uint32_t) 0);
     vadc_cb.dma_intr_flag = 0;
+    dma_set_cnt_start(&vadc_cb.dma, byte_count);
 }
 
-void vadc_read_header(){
+static inline void vadc_read_header(){
     // Send read ADC command
     spi_write_word(&vadc_cb.spi_host_vadc, READ_MEM_CMD);
     spi_wait_for_ready(&vadc_cb.spi_host_vadc);
@@ -649,7 +661,7 @@ void vadc_read_header(){
     spi_wait_for_ready(&vadc_cb.spi_host_vadc);
 
     // Send dummy (wating) cycles
-    spi_write_word(&vadc_cb.spi_host_vadc, DUMMY_DATA);
+    spi_write_word(&vadc_cb.spi_host_vadc, 0U);
     spi_wait_for_ready(&vadc_cb.spi_host_vadc);
     spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.send_dummy_spi_cmd);
     spi_wait_for_ready(&vadc_cb.spi_host_vadc);

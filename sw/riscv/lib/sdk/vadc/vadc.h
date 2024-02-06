@@ -97,6 +97,13 @@ typedef enum
 void vadc_init();
 
 /**
+ * @brief Initializes the virtual ADC through the SPI. The clock frequency is
+ * set to the maximum by default
+ * @retval None
+ */
+void vadc_deinit();
+
+/**
  * @brief Initiates one continuous transactions with the virtual ADC through
  * the SPI using the DMA to trasfer the data to the memory.
  * @param data_buffer Pointer to where data will be collected from the virtual ADC
