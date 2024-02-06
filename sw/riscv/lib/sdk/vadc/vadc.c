@@ -97,7 +97,6 @@
 
 /**
  * Comands to read registers of the Virtual ADC (SPI2 SPI bridge)
- * @todo store them as 1 bytes
  */
 typedef enum
 {
@@ -361,16 +360,34 @@ static struct
 /**
  * The SPI configuration setting to communicate with the virtual ADC.
  * This configuration variable is initialized with the default values.
- * @todo adjust the spi configs. The timings should be readjusted
  */
 spi_configopts_t vadc_spi_config = {
         /**
          * The SPI clock starts from core_clk/2 (clkdiv=0)
         */
         .clkdiv = 0,
-        .csnidle = 0xF,
-        .csntrail = 0xF,
-        .csnlead = 0xF,
+
+        /**
+         * The minimum time between each rising edge of CSB and the
+         * following falling edge. Set to the minimum: no need when
+         * operating the virtual ADC
+        */
+        .csnidle = 0x0,
+
+        /**
+         * The minimum time between the last trailing edge of SCK and
+         * the following rising edge of CSB. Set to the minimum: no need
+         * when operating the virtual ADC
+        */
+        .csntrail = 0x0,
+
+        /**
+         * The minimum time between each falling edge of CSB and the
+         * first leading edge of SCK. Set to the minimum: no need when
+         * operating the virtual ADC
+        */
+        .csnlead = 0x0,
+
         .fullcyc = false,
         .cpha = 0,
         .cpol = 0
