@@ -51,9 +51,11 @@
 #define REVERT_32b_ADDR(x) (((uint32_t)x >> 24) | (((uint32_t)x & 0x00ff0000) >> 8) | (((uint32_t)x & 0x0000ff00) << 8) | (((uint32_t)x & 0x000000ff) << 24))
 
 /**
- * Inverts the bytes of a 2 byte transaction
+ * Inverts the bytes of a 2 byte transaction.
+ * The SPI send first the least significant byte (the cmd) followed by the
+ * most significant byte (the value)
  */
-#define REVERT_16b(x) (((uint16_t)x >> 8) | (((uint16_t)x & 0x00ff) << 8))
+#define CONCAT_TX_CMD(cmd,val) (((uint16_t)cmd & 0x00ff) | ((uint16_t)val << 8))
 
 /**
  * Maximum frequency of the VADC
@@ -343,7 +345,7 @@ static struct
     /**
     * Send 1 byte value for the the virtual ADC register (end stransaction)
     */
-    uint32_t write_reg_value_spi_cmd;
+    uint32_t write_reg_spi_cmd;
 
     /**
     * Send 4 bytes address to read/write the virtual ADC (keep stransaction)
@@ -456,14 +458,12 @@ void set_vadc_config(){
 }
 
 /**
- * @todo send one single transaction
+ * @todo send one single transaction. fix names
 */
 void reg_write_vadc(reg_read_vadc_cmd cmd, uint8_t value){
-    spi_write_word(&vadc_cb.spi_host_flash, (uint32_t) cmd);
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.cmd_send_spi_cmd);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
-    spi_write_word(&vadc_cb.spi_host_flash, (uint8_t) value);
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.write_reg_value_spi_cmd);
+    uint16_t full_cmd = CONCAT_TX_CMD(cmd,value);
+    spi_write_word(&vadc_cb.spi_host_flash, (uint32_t) full_cmd);
+    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.write_reg_spi_cmd);
     spi_wait_for_ready(&vadc_cb.spi_host_flash);
 }
 
@@ -490,8 +490,8 @@ void create_spi_cmds(){
     /**
     * SPI command to send value to read in a register of the Virtual ACD through the SPI
     */
-    vadc_spi_cmds.write_reg_value_spi_cmd        = spi_create_command((spi_command_t){
-                                                                        .len        = 0,
+    vadc_spi_cmds.write_reg_spi_cmd              = spi_create_command((spi_command_t){
+                                                                        .len        = 1,
                                                                         .csaat      = false,
                                                                         .speed      = kSpiSpeedStandard,
                                                                         .direction  = kSpiDirTxOnly
