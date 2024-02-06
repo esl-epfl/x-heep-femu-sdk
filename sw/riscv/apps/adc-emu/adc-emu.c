@@ -48,6 +48,17 @@ int main(int argc, char *argv[])
     // Init the virtual ADC
     vadc_init();
 
+    // Adjust the virtual ADC speed adquisition.
+    uint32_t target_freq = 700 * 1000; // Frequency in Hz
+    uint32_t actual_freq= 0 ;
+    printf("CLK_TARGET %d\n", target_freq);
+    actual_freq = set_vadc_clk(target_freq, CLK_BELOW);
+    printf("CLK_BELOW %d\n", actual_freq);
+    actual_freq = set_vadc_clk(target_freq, CLK_ABOVE);
+    printf("CLK_ABOVE %d\n", actual_freq);
+    actual_freq = set_vadc_clk(target_freq, CLK_NEAREST);
+    printf("CLK_NEAREST %d\n", actual_freq);
+
     // Obtain the data (simulating obtaining a buffer from the ADC)
     read_vadc_dma(data_buffer, 4 * INPUT_DATA_LENGTH);
 

@@ -58,12 +58,6 @@
 #define CONCAT_TX_CMD(cmd,val) (((uint16_t)cmd & 0x00ff) | ((uint16_t)val << 8))
 
 /**
- * Maximum frequency of the VADC
- * The FPGA can support a maximum of 133MHz with the current design
- */
-#define VADC_CLK_MAX_HZ (133 * 1000 * 1000)
-
-/**
  * Base address of the virtual adc
  */
 #define VADC_BASE_ADDR REVERT_32b_ADDR(0x00000000)
@@ -284,7 +278,7 @@ static struct
     /**
     * SPI peripheral
     */
-    spi_host_t spi_host_flash;
+    spi_host_t spi_host_vadc;
 
     /**
      * DMA peripheral
@@ -364,6 +358,24 @@ static struct
 
 }vadc_spi_cmds;
 
+/**
+ * The SPI configuration setting to communicate with the virtual ADC.
+ * This configuration variable is initialized with the default values.
+ * @todo adjust the spi configs. The timings should be readjusted
+ */
+spi_configopts_t vadc_spi_config = {
+        /**
+         * The SPI clock starts from core_clk/2 (clkdiv=0)
+        */
+        .clkdiv = 0,
+        .csnidle = 0xF,
+        .csntrail = 0xF,
+        .csnlead = 0xF,
+        .fullcyc = false,
+        .cpha = 0,
+        .cpol = 0
+        };
+
 /****************************************************************************/
 /**                                                                        **/
 /*                           EXPORTED FUNCTIONS                             */
@@ -418,8 +430,8 @@ void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count)
     // -- VADC transactions -- //
 
     // Start SPI transaction
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.read_data_spi_cmd);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
+    spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.read_data_spi_cmd);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
     // Strart DMA transaction
     dma_set_cnt_start(&vadc_cb.dma, (uint32_t) byte_count);
 
@@ -429,6 +441,56 @@ void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count)
     while(vadc_cb.dma_intr_flag == 0) {
         wait_for_interrupt();
     }
+}
+
+uint32_t set_vadc_clk(uint32_t target_freq, clk_round_t round_type){
+    /**
+     * The clock divider slows down subsequent SPI transactions by a factor of
+     * (CLKDIV+1) relative to the core clock frequency. The period of sck, T(sck)
+     * then becomes 2*(CLK_DIV+1)*T(core).
+    */
+
+    /**
+     * Check if the target frequency is feasible
+     * SPI SCK line typically toggles at 1/2 the core clock frequency.
+     * An additional clock rate divider exists to reduce the frequency if needed.
+    */
+    uint32_t max_freq = soc_ctrl_get_frequency(&vadc_cb.soc_ctrl)/2;
+    uint16_t clk_div = (max_freq/target_freq - 1);
+
+    // Recalculate the actual frequency
+    uint32_t current_freq = 0 ;
+    switch (round_type)
+    {
+        case CLK_ABOVE:
+            current_freq = max_freq / (1 + clk_div);
+            break;
+
+        case CLK_BELOW:
+            clk_div++;
+            current_freq = max_freq / (1 + clk_div);
+            break;
+
+        case CLK_NEAREST:
+            current_freq = max_freq / (clk_div + 1);
+            int32_t lower_freq = max_freq / (clk_div + 2);
+            if ( (target_freq - lower_freq) < (current_freq - target_freq) ){
+                clk_div++;
+                current_freq = lower_freq;
+            }
+            break;
+            
+        default:
+            break;
+    }
+
+    // Set clock divider of the spi to achieve the target frequency
+    vadc_spi_config.clkdiv = clk_div;
+    uint32_t vadc_spi_config_compact = spi_create_configopts(vadc_spi_config);
+    spi_set_configopts(&vadc_cb.spi_host_vadc, 0, vadc_spi_config_compact);
+    spi_set_csid(&vadc_cb.spi_host_vadc, 0);
+
+    return current_freq;
 }
 
 /****************************************************************************/
@@ -457,14 +519,11 @@ void set_vadc_config(){
     reg_write_vadc(WRITE_REG3_CMD, vadc_config.wrap_around.byte.high);
 }
 
-/**
- * @todo send one single transaction. fix names
-*/
 void reg_write_vadc(reg_read_vadc_cmd cmd, uint8_t value){
     uint16_t full_cmd = CONCAT_TX_CMD(cmd,value);
-    spi_write_word(&vadc_cb.spi_host_flash, (uint32_t) full_cmd);
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.write_reg_spi_cmd);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
+    spi_write_word(&vadc_cb.spi_host_vadc, (uint32_t) full_cmd);
+    spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.write_reg_spi_cmd);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
 }
 
 void create_spi_cmds(){
@@ -516,36 +575,16 @@ void create_spi_cmds(){
                                                                     });    
 }
 
-/**
- * @todo be able to modify frequency
-*/
 void set_spi_vadc_config(){
     // Set SPI bas address
-    vadc_cb.spi_host_flash.base_addr = mmio_region_from_addr((uintptr_t)SPI_HOST_START_ADDRESS);
-    spi_set_enable(&vadc_cb.spi_host_flash, true);
-    spi_output_enable(&vadc_cb.spi_host_flash, true);
+    vadc_cb.spi_host_vadc.base_addr = mmio_region_from_addr((uintptr_t)SPI_HOST_START_ADDRESS);
+    spi_set_enable(&vadc_cb.spi_host_vadc, true);
+    spi_output_enable(&vadc_cb.spi_host_vadc, true);
 
-    // Set SPI clock
-    uint32_t core_clk = soc_ctrl_get_frequency(&vadc_cb.soc_ctrl);
-    uint16_t clk_div = 0;
-    if (VADC_CLK_MAX_HZ < core_clk / 2)
-    {
-        clk_div = (core_clk / (VADC_CLK_MAX_HZ)-2) / 2;
-        if (core_clk / (2 + 2 * clk_div) > VADC_CLK_MAX_HZ)
-            clk_div += 1;
-    }
-
-    // Set SPI config
-    const uint32_t chip_cfg_flash = spi_create_configopts((spi_configopts_t){
-        .clkdiv = clk_div,
-        .csnidle = 0xF,
-        .csntrail = 0xF,
-        .csnlead = 0xF,
-        .fullcyc = false,
-        .cpha = 0,
-        .cpol = 0});
-    spi_set_configopts(&vadc_cb.spi_host_flash, 0, chip_cfg_flash);
-    spi_set_csid(&vadc_cb.spi_host_flash, 0);
+    // Set the SPI configuration settings
+    uint32_t vadc_spi_config_compact = spi_create_configopts(vadc_spi_config);
+    spi_set_configopts(&vadc_cb.spi_host_vadc, 0, vadc_spi_config_compact);
+    spi_set_csid(&vadc_cb.spi_host_vadc, 0);
 
     // Generate SPI commands for the virtual ADC
     create_spi_cmds();
@@ -569,7 +608,7 @@ void set_dma_vadc_config(){
 }
 
 void set_vadc_dma_transaction(uint32_t *data){
-    uint32_t *fifo_ptr_rx = vadc_cb.spi_host_flash.base_addr.base + SPI_HOST_RXDATA_REG_OFFSET;
+    uint32_t *fifo_ptr_rx = vadc_cb.spi_host_vadc.base_addr.base + SPI_HOST_RXDATA_REG_OFFSET;
     dma_set_read_ptr_inc(&vadc_cb.dma, (uint32_t) 0);
     dma_set_write_ptr_inc(&vadc_cb.dma, (uint32_t) 4);
     dma_set_read_ptr(&vadc_cb.dma, (uint32_t) fifo_ptr_rx);
@@ -581,22 +620,22 @@ void set_vadc_dma_transaction(uint32_t *data){
 
 void vadc_read_header(){
     // Send read ADC command
-    spi_write_word(&vadc_cb.spi_host_flash, READ_MEM_CMD);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.cmd_send_spi_cmd);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
+    spi_write_word(&vadc_cb.spi_host_vadc, READ_MEM_CMD);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
+    spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.cmd_send_spi_cmd);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
 
     // Send ADC address
-    spi_write_word(&vadc_cb.spi_host_flash, vadc_cb.vadc_addr);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.send_address_spi_cmd);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
+    spi_write_word(&vadc_cb.spi_host_vadc, vadc_cb.vadc_addr);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
+    spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.send_address_spi_cmd);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
 
     // Send dummy (wating) cycles
-    spi_write_word(&vadc_cb.spi_host_flash, DUMMY_DATA);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
-    spi_set_command(&vadc_cb.spi_host_flash, vadc_spi_cmds.send_dummy_spi_cmd);
-    spi_wait_for_ready(&vadc_cb.spi_host_flash);
+    spi_write_word(&vadc_cb.spi_host_vadc, DUMMY_DATA);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
+    spi_set_command(&vadc_cb.spi_host_vadc, vadc_spi_cmds.send_dummy_spi_cmd);
+    spi_wait_for_ready(&vadc_cb.spi_host_vadc);
 }
 
 /****************************************************************************/
