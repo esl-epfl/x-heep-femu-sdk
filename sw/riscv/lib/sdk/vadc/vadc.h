@@ -110,10 +110,10 @@ void vadc_deinit();
  * @param byte_count Number of bytes to be trasfered
  * @retval None
  */
-void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count);
+void launch_vadc(uint32_t *data_buffer, uint32_t byte_count);
 
 /**
- * @brief Set the clk for the spi transactions with the spi. 
+ * @brief Set the clk for the spi transactions with the spi.
  * @param target_freq Target clock frequency in Hz for the SPI communication
  * with the virtual ADC
  * @param round_type If the target frequency cannot be achieved, it will be

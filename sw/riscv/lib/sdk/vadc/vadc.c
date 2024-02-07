@@ -111,7 +111,7 @@ typedef enum
      * Reads from the reg3 of the VADC controller (SPI2AXI bridge)
     */
     READ_REG3_CMD       = 0x31
-    
+
 } reg_read_vadc_cmd;
 
 /**
@@ -135,7 +135,7 @@ typedef enum
      * Reads from the reg2 of the VADC controller (SPI2AXI bridge)
     */
     WRITE_REG3_CMD      = 0x30
-    
+
 } reg_write_vadc_cmd;
 
 /**
@@ -399,12 +399,24 @@ spi_configopts_t vadc_spi_config = {
 /**                                                                        **/
 /****************************************************************************/
 
+__attribute__((weak, optimize("O0"))) void vadc_done()
+{
+    /*
+     * The DMA transaction has finished!
+     * This is a weak implementation.
+     * Create your own function called
+     * void vadc_done()
+     * to override this one.
+     */
+}
+
 void handler_irq_fast_dma(void)
 {
     fast_intr_ctrl_t fast_intr_ctrl;
     fast_intr_ctrl.base_addr = mmio_region_from_addr((uintptr_t)FAST_INTR_CTRL_START_ADDRESS);
     clear_fast_interrupt(&fast_intr_ctrl, kDma_fic_e);
     vadc_cb.dma_intr_flag = 1;
+    vadc_done();
 }
 
 void vadc_init()
@@ -413,7 +425,7 @@ void vadc_init()
      * Set the SOC to use the SPI
     */
     set_soc_vadc_config();
-    
+
     /**
      * Set the DMA to capture the SPI data from the virtual ADC
     */
@@ -442,7 +454,7 @@ void vadc_deinit(){
     spi_sw_reset(&vadc_cb.spi_host_vadc);
 }
 
-void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count)
+void launch_vadc(uint32_t *data_buffer, uint32_t byte_count)
 {
     // Start SPI transaction to receive data
     vadc_spi_cmds.read_data_spi_cmd = spi_create_command((spi_command_t){
@@ -457,11 +469,6 @@ void read_vadc_dma(uint32_t *data_buffer, uint32_t byte_count)
     // Start DMA transaction
     // Setting the DMA
     set_vadc_dma_transaction(data_buffer, byte_count);
-
-    // Wait for virtual ADC transaction to be completed
-    while(vadc_cb.dma_intr_flag == 0) {
-        wait_for_interrupt();
-    }
 }
 
 uint32_t set_vadc_clk(uint32_t target_freq, clk_round_t round_type){
@@ -500,7 +507,7 @@ uint32_t set_vadc_clk(uint32_t target_freq, clk_round_t round_type){
                 current_freq = lower_freq;
             }
             break;
-            
+
         default:
             break;
     }
@@ -528,10 +535,10 @@ static inline void set_vadc_config(){
     vadc_config.qspi_mode = QSPI_OFF;
     vadc_config.dummy_cycles = B2C(DUMMY_BYTES) - 1;
     vadc_config.wrap_around.addr = WRAP_AROUND_ADDR;
-    
+
     // Set normal SPI (reg0)
     reg_write_vadc(WRITE_REG0_CMD, vadc_config.qspi_mode);
-    
+
     // Set the dummy address (reg1)
     reg_write_vadc(WRITE_REG1_CMD, vadc_config.dummy_cycles);
 
@@ -566,7 +573,7 @@ static inline void create_spi_cmds(){
                                                                         .csaat      = false,
                                                                         .speed      = kSpiSpeedStandard,
                                                                         .direction  = kSpiDirRxOnly
-                                                                    });   
+                                                                    });
     /**
     * SPI command to send value to read in a register of the Virtual ACD through the SPI
     */
@@ -575,7 +582,7 @@ static inline void create_spi_cmds(){
                                                                         .csaat      = false,
                                                                         .speed      = kSpiSpeedStandard,
                                                                         .direction  = kSpiDirTxOnly
-                                                                    });    
+                                                                    });
     /**
     * SPI command to send memory address to read in the Virtual ACD through the SPI
     */
@@ -584,10 +591,10 @@ static inline void create_spi_cmds(){
                                                                         .csaat      = true,
                                                                         .speed      = kSpiSpeedStandard,
                                                                         .direction  = kSpiDirTxOnly
-                                                                    });    
+                                                                    });
     /**
     * SPI command to send dummy cycles to the virtual ADC
-    */                 
+    */
     vadc_spi_cmds.send_dummy_spi_cmd             = spi_create_command((spi_command_t){
                                                                         .len        = DUMMY_BYTES - 1,
                                                                         .csaat      = true,
