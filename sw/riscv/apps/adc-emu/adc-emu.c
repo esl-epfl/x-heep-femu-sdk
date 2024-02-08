@@ -56,11 +56,11 @@ static inline void data_processing_old(uint32_t *input, uint32_t size){
 
 static inline uint32_t data_processing( uint32_t *input, uint32_t size ){
     uint32_t i;
-    uint32_t avg = 0;
+    uint32_t max = 0;
     for( i = 0; i < size; i ++){
-        avg += input[i];
+        max = input[i] > max ? input[i] : max;
     }
-    return avg /= size;
+    return max;
 }
 
 
