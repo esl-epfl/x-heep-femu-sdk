@@ -17,43 +17,9 @@
 
 volatile bool acquiring = false;
 
-typedef enum{
-    STATE_ACQ_PROC__INIT,
-    STATE_ACQ_PROC__LAUNCH_ACQ_A,
-    STATE_ACQ_PROC__LAUNCH_ACQ_B,
-    STATE_ACQ_PROC__WAIT_ACQ_A,
-    STATE_ACQ_PROC__WAIT_ACQ_B,
-    STATE_ACQ_PROC__PROC_A,
-    STATE_ACQ_PROC__PROC_B,
-    STATE_ACQ_PROC__END,
-} state_acq_proc_t;
-
 /**
- * This functions takes the data and returns two values:
- * LPF | HPF
- *
- * LPF: The moving-mean of the signal with a sample window that is a power of 2.
- * HPF: The original signal, subtracted the moving-mean.
-*/
-static inline void data_processing_old(uint32_t *input, uint32_t size){
-    uint8_t bits = 5;
-    uint32_t m  = input[0];
-    uint32_t mb = m << bits;
-    uint32_t x = 0;
-    uint32_t h = 0;
-    uint32_t l = m;
-
-    for(uint32_t i = 1; i < size; i++){
-        x = input[i];       // The current value to compute the mean
-        mb -= m;            // 4*mean without the last value
-        mb += x;            // 4*mean with the new value
-        m = mb >> bits;     // The new mean (4*mean/4)
-        h = l - m;          // The new HPFd value (signal - mean)
-        l = x;              // The value of data[i-1] for the next iteration
-        input[i] = m;       // Store in the input the value of its mean
-    }
-}
-
+ * Takes data from an input buffer and returns the result of some processing.
+ */
 static inline uint32_t data_processing( uint32_t *input, uint32_t size ){
     uint32_t i;
     uint32_t max = 0;
@@ -72,42 +38,24 @@ void vadc_done(){
     acquiring = false;
 }
 
+/**
+ * Waits for the vADC to finish its acquisition in a blocking mode.
+ * @ToDo: Send X-HEEP to sleep
+ */
 static inline void wait_vadc_done(){
     while( acquiring ){};
 }
 
-int main(int argc, char *argv[])
-{
-    static state_acq_proc_t state_acq_proc = STATE_ACQ_PROC__INIT;
-    static uint32_t buffer_A    [INPUT_BUFFER_SIZE];
-    static uint32_t buffer_B    [INPUT_BUFFER_SIZE];
-    static uint32_t buffer_out  [INPUT_DATA_LENGTH/INPUT_BUFFER_SIZE];
-
+/**
+ * Interleave acquisition and processing of the data received from the vADC over two buffers.
+ * For the whole duration of the acquisition the DMA will copy data obtained from the vADC into
+ * one buffer while the CPU processes data on the other. Results are stored in a third buffer.
+ */
+static inline void acquire_and_process( uint32_t *buffer_A, uint32_t *buffer_B, uint32_t *buffer_out){
     uint32_t processed_data         = 0;
     uint32_t acquired_data          = 0;
     uint32_t acquisition_size_A     = 0;
     uint32_t acquisition_size_B     = 0;
-
-
-    // Start the performance counters to report timing and energy
-    perf_start();
-
-    // Init the virtual ADC
-    vadc_init();
-
-    // Adjust the virtual ADC speed adquisition.
-    uint32_t freq = 700 * 1000; // Frequency in Hz
-    printf("Target frequency: %d Hz\n", freq);
-    freq = set_vadc_clk(freq, CLK_BELOW);
-    printf("Frequency achieved: %d Hz\n", freq);
-
-
-    /*
-        For simplicity of this demo the following loop will be implemented with blocking
-        functions, although the same idea could be implemented on an FSM or RTOS.
-    */
-
-
 
     acquisition_size_A = ACQUISITION_BLOCK_SIZE();
     acquiring = true;
@@ -145,6 +93,31 @@ int main(int argc, char *argv[])
             processed_data += acquisition_size_B;
         }
     }
+}
+
+
+int main(int argc, char *argv[])
+{
+    // The two buffers used to interleave the acquisition and processing of input data.
+    static uint32_t buffer_A    [INPUT_BUFFER_SIZE];
+    static uint32_t buffer_B    [INPUT_BUFFER_SIZE];
+    // The buffer used to store the results of the processing.
+    static uint32_t buffer_out  [INPUT_DATA_LENGTH/INPUT_BUFFER_SIZE];
+
+    // Start the performance counters to report timing and energy
+    perf_start();
+
+    // Init the virtual ADC
+    vadc_init();
+
+    // Adjust the virtual ADC speed adquisition.
+    uint32_t freq = set_vadc_clk(VADC_SAMPLING_FREQ_HZ, CLK_BELOW);
+    printf("Sampling frequency: %d Hz\n", freq);
+
+    // Interleave between to buffers to acquire data and process it.
+    // The result of the processing is stored in buffer_out to be transmitted back
+    // into the FEMU.
+    acquire_and_process(buffer_A, buffer_B, buffer_out);
 
     // Stops the transaction
     vadc_deinit();
