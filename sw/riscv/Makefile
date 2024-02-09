@@ -155,7 +155,7 @@ apps/energy_estimation/energy_estimation.elf: apps/energy_estimation/energy_esti
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
 
-apps/adc-emu/adc-emu.elf: apps/adc-emu/adc-emu.c
+apps/vadc_example/vadc_example.elf: apps/vadc_example/vadc_example.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
 		-DHOST_BUILD \
@@ -167,7 +167,7 @@ apps/adc-emu/adc-emu.elf: apps/adc-emu/adc-emu.c
 		$^ $(LIB_RUNTIME) \
 		$(LIB_BASE) \
 		$(LIB_DRIVERS) \
-		-Wl,-Map=apps/adc-emu/adc-emu.map \
+		-Wl,-Map=apps/vadc_example/vadc_example.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
 

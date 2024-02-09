@@ -13,7 +13,7 @@
 #include "vadc.h"
 #include "definitions.h"
 
-#define ACQUISITION_BLOCK_SIZE() (((INPUT_DATA_LENGTH) - (acquired_data)) > (INPUT_BUFFER_SIZE) ? (INPUT_BUFFER_SIZE) : ((INPUT_DATA_LENGTH) - (acquired_data)))
+#define ACQUISITION_BLOCK_SIZE() (((VADC_ACQUISITION_SAMPLES) - (acquired_data)) > (X_HEEP_SAMPLING_BUFFER_SAMPLES) ? (X_HEEP_SAMPLING_BUFFER_SAMPLES) : ((VADC_ACQUISITION_SAMPLES) - (acquired_data)))
 
 volatile bool acquiring = false;
 
@@ -61,35 +61,35 @@ static inline void acquire_and_process( uint32_t *buffer_A, uint32_t *buffer_B, 
     acquiring = true;
     launch_vadc(buffer_A, WORD_SIZE_BYTES * acquisition_size_A);
 
-    while( processed_data < INPUT_DATA_LENGTH ){
+    while( processed_data < VADC_ACQUISITION_SAMPLES ){
 
         wait_vadc_done();
         acquired_data += acquisition_size_A;
 
-        if( acquired_data < INPUT_DATA_LENGTH ){
+        if( acquired_data < VADC_ACQUISITION_SAMPLES ){
             acquisition_size_B = ACQUISITION_BLOCK_SIZE();
             acquiring = true;
             launch_vadc(buffer_B, WORD_SIZE_BYTES * acquisition_size_B);
         }
 
-        if( processed_data < INPUT_DATA_LENGTH ){
-            buffer_out[ processed_data/INPUT_BUFFER_SIZE ] = data_processing(buffer_A, acquisition_size_A);
+        if( processed_data < VADC_ACQUISITION_SAMPLES ){
+            buffer_out[ processed_data/X_HEEP_SAMPLING_BUFFER_SAMPLES ] = data_processing(buffer_A, acquisition_size_A);
             processed_data += acquisition_size_A;
         }
 
-        if( acquired_data < INPUT_DATA_LENGTH ){
+        if( acquired_data < VADC_ACQUISITION_SAMPLES ){
             wait_vadc_done();
             acquired_data += acquisition_size_B;
         }
 
-        if( acquired_data < INPUT_DATA_LENGTH ){
+        if( acquired_data < VADC_ACQUISITION_SAMPLES ){
             acquisition_size_A = ACQUISITION_BLOCK_SIZE();
             acquiring = true;
             launch_vadc(buffer_A, WORD_SIZE_BYTES * acquisition_size_A);
         }
 
-        if( processed_data < INPUT_DATA_LENGTH ){
-            buffer_out[ processed_data/INPUT_BUFFER_SIZE ] = data_processing(buffer_B, acquisition_size_B);
+        if( processed_data < VADC_ACQUISITION_SAMPLES ){
+            buffer_out[ processed_data/X_HEEP_SAMPLING_BUFFER_SAMPLES ] = data_processing(buffer_B, acquisition_size_B);
             processed_data += acquisition_size_B;
         }
     }
@@ -99,10 +99,10 @@ static inline void acquire_and_process( uint32_t *buffer_A, uint32_t *buffer_B, 
 int main(int argc, char *argv[])
 {
     // The two buffers used to interleave the acquisition and processing of input data.
-    static uint32_t buffer_A    [INPUT_BUFFER_SIZE];
-    static uint32_t buffer_B    [INPUT_BUFFER_SIZE];
+    static uint32_t buffer_A    [X_HEEP_SAMPLING_BUFFER_SAMPLES];
+    static uint32_t buffer_B    [X_HEEP_SAMPLING_BUFFER_SAMPLES];
     // The buffer used to store the results of the processing.
-    static uint32_t buffer_out  [INPUT_DATA_LENGTH/INPUT_BUFFER_SIZE];
+    static uint32_t buffer_out  [VADC_ACQUISITION_SAMPLES/X_HEEP_SAMPLING_BUFFER_SAMPLES];
 
     // Start the performance counters to report timing and energy
     perf_start();
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     perf_stop();
 
     // Send back the result.
-    write_result(buffer_out, INPUT_DATA_LENGTH/INPUT_BUFFER_SIZE);
+    write_result(buffer_out, VADC_ACQUISITION_SAMPLES/X_HEEP_SAMPLING_BUFFER_SAMPLES);
 
     return EXIT_SUCCESS;
 
