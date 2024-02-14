@@ -49,12 +49,6 @@
 #define OUTPUT_DIVIDER 	"|"
 #define OUTPUT_END_SEQ 	"#---"
 
-#if ENABLE_PRINTF
-    #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
-#else
-    #define PRINTF(...)
-#endif
-
 /****************************************************************************/
 /**                                                                        **/
 /*                        TYPEDEFS AND STRUCTURES                           */
@@ -114,22 +108,6 @@ void perf_start(){
 
 void perf_stop(){
     gpio_write(&perf_cb.gpio, PERF_GPIO, false);
-}
-
-void write_result(uint32_t* data, uint32_t size){
-
-    // Sequence header
-    PRINTF("%sOutput\n",OUTPUT_START_SEQ);
-
-    // Data to send
-    for(uint32_t i = 0; i < size; i++){
-        PRINTF("%02d\n", data[i]);
-    }
-
-    // Sequence tail
-    PRINTF("%s\n",OUTPUT_END_SEQ);
-
-    return;
 }
 
 /****************************************************************************/

@@ -80,12 +80,6 @@ void perf_start();
  */
 void perf_stop();
 
-/**
- * @brief Print results throug the UART so the processing system of the FPGA can read them
- * @retval None
- */
-void write_result(uint32_t* data, uint32_t size);
-
 /****************************************************************************/
 /**                                                                        **/
 /**                          INLINE FUNCTIONS                              **/

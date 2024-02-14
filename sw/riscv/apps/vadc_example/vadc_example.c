@@ -15,19 +15,57 @@
 
 #define ACQUISITION_BLOCK_SIZE() (((VADC_ACQUISITION_SAMPLES) - (acquired_data)) > (X_HEEP_SAMPLING_BUFFER_SAMPLES) ? (X_HEEP_SAMPLING_BUFFER_SAMPLES) : ((VADC_ACQUISITION_SAMPLES) - (acquired_data)))
 
+#if ENABLE_PRINTF
+    #define PRINTF(fmt, ...)    printf(fmt, ## __VA_ARGS__)
+#else
+    #define PRINTF(...)
+#endif
+
 volatile bool acquiring = false;
 
 /**
  * Takes data from an input buffer and returns the result of some processing.
  */
 static inline uint32_t data_processing( uint32_t *input, uint32_t size ){
-    uint32_t i;
-    uint32_t max = 0;
+    uint16_t i;
+    uint32_t data   = 0;
+    uint32_t data_A = 0;
+    uint32_t data_B = 0;
+    uint32_t max_A  = 0;
+    uint32_t max_B  = 0;
+
     for( i = 0; i < size; i ++){
-        max = input[i] > max ? input[i] : max;
+        data = input[i];
+
+        data_A =  data & ADC_CH_DATA_MASK;
+        max_A = data_A > max_A ? data_A : max_A;
+
+        data_B = (data >> WORD_SIZE_BITS) & ADC_CH_DATA_MASK; // The current value to compute the mean
+        max_B = data_B > max_B ? data_B : max_B ;
     }
-    return max;
+    return (max_A & ADC_CH_DATA_MASK) | ((max_B & ADC_CH_DATA_MASK) << WORD_SIZE_BITS);
 }
+
+/**
+ * Print results throug the UART so the processing system of the FPGA can read them
+ * None
+ */
+void write_result(uint32_t* data, uint32_t size){
+
+    // Sequence header
+    PRINTF("%sOutput\n",OUTPUT_START_SEQ);
+
+    // Data to send
+    for(uint32_t i = 0; i < size; i++){
+        PRINTF("%02d\n", data[i]);
+    }
+
+    // Sequence tail
+    PRINTF("%s\n",OUTPUT_END_SEQ);
+
+    return;
+}
+
 
 
 /**
@@ -112,7 +150,7 @@ int main(int argc, char *argv[])
 
     // Adjust the virtual ADC speed adquisition.
     uint32_t freq = set_vadc_clk(VADC_SAMPLING_FREQ_HZ, CLK_BELOW);
-    printf("Sampling frequency: %d Hz\n", freq);
+    PRINTF("Sampling frequency: %d Hz\n", freq);
 
     // Interleave between to buffers to acquire data and process it.
     // The result of the processing is stored in buffer_out to be transmitted back

@@ -171,6 +171,9 @@ class x_heep(Overlay):
         # Map the Virtual ADC block
         virtual_adc = MMIO(VIRTUAL_ADC_OFFSET, 64*1024) # Size mapped by Vivado
 
+        adc_mem = MMIO(ADC_OFFSET, 8192)
+        adc_mem.read(0)
+
         # Reset all values to default
         virtual_adc.write(0x10, size_8B)                        # DDR_SIZE_BUFFER     0x10/4 (WRITE) // 64-bits word
         # virtual_adc.read(0x18)                                # DDR_CONS_ADDR       0x18/4 (READ)
@@ -186,9 +189,10 @@ class x_heep(Overlay):
 
         return virtual_adc, DDR_buffer
 
-    def restart_virtual_adc(self, virtual_adc):
+    def reset_virtual_adc(self, virtual_adc):
+        virtual_adc.write(0x44, 0)                              # ADC_ERROR_I         0x44/4 (WRITE)
         virtual_adc.write(0x30, 0)                              # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
-        virtual_adc.write(0x30, 1)                              # DDR_READY           0x30/4 (WRITE) // Valid (bit 0)
+        virtual_adc.write(0x28, 0)                              # DDR_PROD_ADDR       0x28/4 (WRITE)
 
     def ddr_circular_buffer_thread(self, stop_event, virtual_adc, bin_file_name, DDR_buffer, DDR_buffer_size_64B):
         # variables
