@@ -20,8 +20,9 @@ MEMORY
   /* Our testbench is a bit weird in that we initialize the RAM (thus
      allowing initialized sections to be placed there). Infact we dump all
      sections to ram. */
-  ram0 (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x00008000
-  ram1 (rwxai) : ORIGIN = 0x00008000, LENGTH = 0x00008000
+  ram0    (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x00008000
+  ram1    (rwxai) : ORIGIN = 0x00008000, LENGTH = 0x00008000
+  ram_ext (rwxai) : ORIGIN = 0xF0000000, LENGTH = 0x12C00000
 }
 
 /*
@@ -372,4 +373,11 @@ SECTIONS
   .debug_addr     0 : { *(.debug_addr) }
   .gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }
   /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) *(.gnu.lto_*) }
+
+  .ram_ext : {
+    . = ALIGN(4);
+    *(.ram_ext)
+    . = ALIGN(4);
+  } >ram_ext
+
 }
