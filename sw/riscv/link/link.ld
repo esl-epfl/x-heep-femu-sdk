@@ -22,7 +22,7 @@ MEMORY
      sections to ram. */
   ram0    (rwxai) : ORIGIN = 0x00000000, LENGTH = 0x00008000
   ram1    (rwxai) : ORIGIN = 0x00008000, LENGTH = 0x00008000
-  ram_ext (rwxai) : ORIGIN = 0xF0000000, LENGTH = 0x06400000
+  ram_ext (rwxai) : ORIGIN = 0xF0000000, LENGTH = 0x08000000
 }
 
 /*
