@@ -25,6 +25,9 @@ x_heep.write_flash(flash)
 # Run the application
 x_heep.run_app()
 
+# Release the allocated memory
+x_heep.release_mem(flash)
+
 # Delete flash
 del flash
 

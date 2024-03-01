@@ -38,7 +38,7 @@ INC_FOLDERS_GCC    = $(addprefix -I ,$(INC_FOLDERS))
 	$(RISCV_EXE_PREFIX)objcopy -O binary $< $@
 
 %.dis: %.elf
-	$(RISCV_EXE_PREFIX)objdump -S $< > $@
+	$(RISCV_EXE_PREFIX)objdump -D $< > $@
 
 apps/hello_world/hello_world.elf: apps/hello_world/hello_world.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
@@ -181,6 +181,22 @@ apps/virtual_obi_write/virtual_obi_write.elf: apps/virtual_obi_write/virtual_obi
 		$(LIB_BASE) \
 		$(LIB_DRIVERS) \
 		-Wl,-Map=apps/virtual_obi_write/virtual_obi_write.map \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+        
+apps/virtual_ddr/virtual_ddr.elf: apps/virtual_ddr/virtual_ddr.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		$(CUSTOM_GCC_FLAGS) \
+		-DHOST_BUILD \
+		-T link/link.ld \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		$(INC_FOLDERS_GCC) \
+		-static \
+		$(LIB_CRT) \
+		$^ $(LIB_RUNTIME) \
+		$(LIB_BASE) \
+		$(LIB_DRIVERS) \
+		-Wl,-Map=apps/virtual_ddr/virtual_ddr.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
 

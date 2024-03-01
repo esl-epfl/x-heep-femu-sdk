@@ -25,6 +25,9 @@ x_heep.run_app()
 # Read the Flash
 x_heep.read_flash(flash)
 
+# Release the allocated memory
+x_heep.release_mem(flash)
+
 # Delete flash
 del flash
 
