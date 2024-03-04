@@ -205,10 +205,10 @@ class x_heep(Overlay):
     def init_ddr_mem(self, mem_size):
 
         # Allocate DDR memory
-        # Default DDR dtype is 32 bit unsigned, which is of size 4B. 
+        # Default DDR dtype is 32 bit unsigned, which is of size 4B.
         ddr = allocate(shape=(int(1048576*mem_size/4),))
-        
-        #Write DDR memory base address to AXI address adder
+
+        # Write DDR memory base address to AXI address adder
         axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
         axi_address_adder.write(0x0, ddr.physical_address)
 
@@ -216,17 +216,20 @@ class x_heep(Overlay):
         ddr[:] = 0
 
         return ddr
-    
+
+
     def read_ddr_mem(self, ddr):
 
         # Read DDR memory
         return list(ddr)
-    
+
+
     def release_mem(self, mem_buffer):
-        
+
         # Free all the memory. Must be paired when a init_xxx_mem() function is present.
         mem_buffer.freebuffer()
-    
+
+
     def init_obi_mem(self):
 
         # Allocate OBI memory
