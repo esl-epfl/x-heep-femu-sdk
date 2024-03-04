@@ -105,21 +105,24 @@ class x_heep(Overlay):
         self.assert_reset()
         time.sleep(0.005)
         self.release_reset()
-        
+
+
     def GPIO_write(self, bit, pin):
-        
-        #Writes to a specifc GPIO pin (pin attribute starts from 0 and 
-        #first 8 GPIO bits on PS are used)
+
+        # Writes to a specifc GPIO pin (pin attribute starts from 0 and
+        # first 8 GPIO bits on PS are used)
         gpio_pin = GPIO(GPIO.get_gpio_pin(8+pin), 'out')
         gpio_pin.write(bit)
-        
+
+
     def GPIO_read(self, pin):
-        
-        #Reads from a specifc GPIO pin (pin attribute starts from 0 and 
-        #first 8 GPIO bits on PS are used)
+
+        # Reads from a specifc GPIO pin (pin attribute starts from 0 and
+        # first 8 GPIO bits on PS are used)
         gpio_pin = GPIO(GPIO.get_gpio_pin(pin), 'in')
         pin_read = gpio_pin.read()
         return pin_read
+
 
     def init_flash(self):
 
