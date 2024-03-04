@@ -29,7 +29,7 @@ for a in range(4096):
     if ddr_read[a] != expected:
         test_passed = False
         break
-        
+
 if test_passed:
     print("Test Passed!")
 else:
