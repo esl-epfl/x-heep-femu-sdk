@@ -28,6 +28,9 @@ x_heep.write_obi_mem(write_list, obi)
 # Run the application
 x_heep.run_app()
 
+# Release the allocated memory
+x_heep.release_mem(obi)
+
 # Delete OBI
 del obi
 

@@ -32,5 +32,8 @@ if target_read == obi_read:
 else:
     print("Test Failed!")
 
+# Release the allocated memory
+x_heep.release_mem(obi)
+
 # Delete OBI
 del obi
