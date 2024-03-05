@@ -27,6 +27,10 @@ class vADC():
         # Launch the thread
         self.thread.start()
 
+        import time
+        time.sleep(3)
+
+
     def init_virtual_adc(self, size_8B):
 
         # Allocate Virtual ADC DDR buffer
