@@ -284,11 +284,6 @@ static struct
      */
     uint32_t vadc_addr;
 
-    /**
-     * DMA peripheral
-     */
-    volatile int8_t dma_intr_flag;
-
 }vadc_cb;
 
 /**
@@ -415,9 +410,9 @@ void handler_irq_fast_dma(void)
     fast_intr_ctrl_t fast_intr_ctrl;
     fast_intr_ctrl.base_addr = mmio_region_from_addr((uintptr_t)FAST_INTR_CTRL_START_ADDRESS);
     clear_fast_interrupt(&fast_intr_ctrl, kDma_fic_e);
-    vadc_cb.dma_intr_flag = 1;
     vadc_done();
 }
+
 
 void vadc_init()
 {
@@ -650,7 +645,6 @@ static inline void set_vadc_dma_transaction(uint32_t *data, uint32_t byte_count)
     dma_set_write_ptr(&vadc_cb.dma, (uint32_t) data);
     dma_set_spi_mode(&vadc_cb.dma, (uint32_t) 1);
     dma_set_data_type(&vadc_cb.dma, (uint32_t) 0);
-    vadc_cb.dma_intr_flag = 0;
     dma_set_cnt_start(&vadc_cb.dma, byte_count);
 }
 
