@@ -29,6 +29,8 @@ fi
 cd - > /dev/null 2>&1
 
 # Quit OpenOCD
-sudo screen -X -S openocd quit
+# sudo screen -X -S openocd quit
+# sudo screen -X quit
+sudo killall screen # The previous approaches would, for reasons escaping my understanding, leave screen sessions open
 
 exit $res
