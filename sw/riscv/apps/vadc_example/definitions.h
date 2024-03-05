@@ -6,9 +6,6 @@
 #define WORD_SIZE_BYTES 	2
 #define WORD_SIZE_BITS 	16
 #define ADC_CH_DATA_MASK 	16383
-#define VADC_SAMPLING_FREQ_HZ 	700000
+#define VADC_SAMPLING_FREQ_HZ 	700000.0
 #define ENABLE_PRINTF 	1
-#define OUTPUT_START_SEQ 	"# "
-#define OUTPUT_DIVIDER 	"|"
-#define OUTPUT_END_SEQ 	"#---"
 #endif

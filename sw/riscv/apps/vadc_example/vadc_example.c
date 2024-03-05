@@ -53,7 +53,7 @@ static inline uint32_t data_processing( uint32_t *input, uint32_t size ){
 void write_result(uint32_t* data, uint32_t size){
 
     // Sequence header
-    PRINTF("%sOutput\n",OUTPUT_START_SEQ);
+    PRINTF("Output\n");
 
     // Data to send
     for(uint32_t i = 0; i < size; i++){
@@ -61,7 +61,7 @@ void write_result(uint32_t* data, uint32_t size){
     }
 
     // Sequence tail
-    PRINTF("%s\n",OUTPUT_END_SEQ);
+    PRINTF("End\n");
 
     return;
 }
