@@ -9,7 +9,7 @@ from pynq import MMIO
 from pynq import allocate
 
 import x_heep_thread as xht
-import x_heep_gpio as gpio
+from x_heep_gpio import *
 
 import os
 import subprocess
@@ -135,24 +135,24 @@ class x_heep(Overlay):
         file.close()
 
     def assert_reset(self):
-        gpio.write_restricted(1,5)
+        gpio_write_restricted(1,5)
 
     def release_reset(self):
-        gpio.write_restricted(0,5)
+        gpio_write_restricted(0,5)
 
 
     def assert_boot_select(self):
-        gpio.write_restricted(1,6)
+        gpio_write_restricted(1,6)
 
 
     def release_boot_select(self):
-        gpio.write_restricted(0,6)
+        gpio_write_restricted(0,6)
 
     def assert_execute_from_flash(self):
-        gpio.write_restricted(1,7)
+        gpio_write_restricted(1,7)
 
     def release_execute_from_flash(self):
-        gpio.write_restricted(0,7)
+        gpio_write_restricted(0,7)
 
     def reset_pulse(self):
         # Reset X-HEEP by sending a pulse of reset

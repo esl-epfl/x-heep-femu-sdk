@@ -6,21 +6,21 @@
 
 from pynq import GPIO
 
-def write(bit, pin):
+def gpio_write(bit, pin):
 
     # Writes to a specifc GPIO pin (pin attribute starts from 0 and
     # first 8 GPIO bits on PS are used)
     gpio_pin = GPIO(GPIO.get_gpio_pin(8+pin), 'out')
     gpio_pin.write(bit)
 
-def write_restricted(bit, pin):
+def gpio_write_restricted(bit, pin):
 
     # Writes to a specifc GPIO pin (pin attribute starts from 0 and
     # first 8 GPIO bits on PS are used)
     gpio_pin = GPIO(GPIO.get_gpio_pin(pin), 'out')
     gpio_pin.write(bit)
 
-def read(pin):
+def gpio_read(pin):
 
     # Reads from a specifc GPIO pin (pin attribute starts from 0 and
     # first 8 GPIO bits on PS are used)
