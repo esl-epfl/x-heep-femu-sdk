@@ -7,16 +7,20 @@
 from pynq import Overlay
 from pynq import MMIO
 from pynq import allocate
+
 import x_heep_thread as xht
+import x_heep_gpio as gpio
 
 import os
 import subprocess
 import serial
+import time
 
-
-FLASH_AXI_ADDRESS_ADDER_OFFSET = 0x44A00000
-
-
+OBI_AXI_ADDRESS_ADDER_OFFSET        = 0x43C10000
+PERFORMANCE_COUNTERS_OFFSET         = 0x43C20000
+R_OBI_AXI_BRIDGE_OFFSET             = 0x43C30000
+R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET  = 0x43C40000
+FLASH_AXI_ADDRESS_ADDER_OFFSET      = 0x44A00000
 
 class x_heep(Overlay):
 
@@ -24,6 +28,9 @@ class x_heep(Overlay):
         # Load bitstream
         super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
         self.uart_data = []
+        self.release_reset()
+        self.release_execute_from_flash()
+        self.release_boot_select()
         print("✅ Bitstream loaded")
 
 
@@ -105,7 +112,6 @@ class x_heep(Overlay):
 
 
     def reset_flash(self, flash):
-
         # Reset Flash
         flash[:] = 0
 
@@ -128,4 +134,29 @@ class x_heep(Overlay):
         file.write(byte_array)
         file.close()
 
+    def assert_reset(self):
+        gpio.write_restricted(1,5)
+
+    def release_reset(self):
+        gpio.write_restricted(0,5)
+
+
+    def assert_boot_select(self):
+        gpio.write_restricted(1,6)
+
+
+    def release_boot_select(self):
+        gpio.write_restricted(0,6)
+
+    def assert_execute_from_flash(self):
+        gpio.write_restricted(1,7)
+
+    def release_execute_from_flash(self):
+        gpio.write_restricted(0,7)
+
+    def reset_pulse(self):
+        # Reset X-HEEP by sending a pulse of reset
+        self.assert_reset()
+        time.sleep(0.005)
+        self.release_reset()
 

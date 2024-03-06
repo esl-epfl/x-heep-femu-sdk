@@ -6,6 +6,9 @@
 
 from pynq import MMIO
 from pynq import allocate
+
+import x_heep_thread as xht
+
 import threading
 import math
 
@@ -42,8 +45,8 @@ class vADC():
         # Map the Virtual ADC block
         self.vadc_instance = MMIO(VIRTUAL_ADC_OFFSET, 64*1024) # Size mapped by Vivado
 
-        adc_mem = MMIO(ADC_OFFSET, 8192)
-        adc_mem.read(0)
+        self.adc_mem = MMIO(ADC_OFFSET, 8192)
+        self.adc_mem.read(0)
 
         # Reset all values to default
         self.vadc_instance.write(0x10, size_8B)                        # DDR_SIZE_BUFFER     0x10/4 (WRITE) // 64-bits word
@@ -129,48 +132,6 @@ class vADC():
             self.vadc_instance.write(0x28, ddr_producer)
 
         file.close()
-
-
-
-
-    def init_adc_mem(self):
-
-        # Map ADC memory
-        adc_mem = MMIO(ADC_OFFSET, 8192)
-
-        # Reset ADC memory
-        for i in range(2048):
-            adc_mem.write(i*4, 0x0)
-
-        return adc_mem
-
-
-    def reset_adc_mem(self, adc_mem):
-
-        # Reset ADC mem
-        for i in range(2048):
-            adc_mem.write(i*4, 0x0)
-
-
-    def write_adc_mem(self, adc_mem):
-
-        # Write ADC memory from binary file
-        file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/adc_in.bin", mode="rb")
-        file_byte = file.read()
-        for i in range(int(len(file_byte)/4)):
-            # adc_mem.write(i*4, (file_byte[i*4+3] << 24) | (file_byte[i*4+2] << 16) | (file_byte[i*4+1] << 8) | file_byte[i*4])
-            adc_mem.write(i*4, (file_byte[i*4+0] << 24) | (file_byte[i*4+1] << 16) | (file_byte[i*4+2] << 8) | file_byte[i*4+3])
-        file.close()
-
-
-    def read_adc_mem(self, adc_mem):
-
-        # Read ADC memory to binary file
-        file = open("/home/xilinx/x-heep-femu-sdk/sw/riscv/build/adc_out.bin", mode="wb")
-        for i in range(2048):
-            file.write(adc_mem.read(i*4).to_bytes(4, 'little'))
-        file.close()
-
 
     def stop(self):
         xht.thread_stop(self.thread, self.stop_flag)
