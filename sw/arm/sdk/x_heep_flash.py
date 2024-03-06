@@ -38,3 +38,6 @@ class Flash():
         byte_array = bytearray(self.flash)
         file.write(byte_array)
         file.close()
+
+    def release_mem(self):
+        self.flash.freebuffer()
