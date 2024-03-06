@@ -6,7 +6,7 @@
 
 from pynq import x_heep                 # Import the X-HEEP Python class
 x_heep = x_heep()                       # Load the X-HEEP bitstream
-x_heep.compile_app("hello_world\n\r")   # Compile the application
+x_heep.compile_app("hello_world")   # Compile the application
 x_heep.run_app();                       # Run the application
 
 # Verify the output
