@@ -7,7 +7,6 @@
 import os
 import subprocess
 import datetime
-import time
 
 list_of_tests = [file for file in os.listdir(os.getcwd()) if file.endswith('.ipynb')]
 print(f"{len(list_of_tests)} applications to be tested.")

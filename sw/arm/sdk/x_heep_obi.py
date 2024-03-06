@@ -37,12 +37,15 @@ class OBI():
         # Read OBI memory
         return list(self.obi)
 
+    def release_mem(self):
+        self.obi.freebuffer()
+
 class rOBI():
 
     def __init__(self, memory_bank_id):
         # Write reverse OBI memory base address to AXI address adder
-        axi_address_adder = MMIO(R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET, 0x4)
-        axi_address_adder.write(0x0, 0x00008000 * memory_bank_id)
+        self.axi_address_adder = MMIO(R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        self.axi_address_adder.write(0x0, 0x00008000 * memory_bank_id)
 
 
     def write_r_obi(self, data, offset, width):
@@ -59,4 +62,4 @@ class rOBI():
 
 
     def release_mem(self):
-        self.obi.freebuffer()
+        self.axi_address_adder.freebuffer()
