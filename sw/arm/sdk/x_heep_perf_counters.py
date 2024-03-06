@@ -8,7 +8,8 @@ from pynq import MMIO
 from pynq import allocate
 import csv
 
-PERFORMANCE_COUNTERS_OFFSET = 0x44A10000
+# PERFORMANCE_COUNTERS_OFFSET = 0x44A10000
+PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
 
 class PerfCounters():
     def __init__(self):

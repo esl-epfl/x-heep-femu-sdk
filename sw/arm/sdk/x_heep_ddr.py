@@ -11,7 +11,7 @@ from pynq import allocate
 OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C10000
 
 class DDR():
-    def init(self, mem_size):
+    def __init__(self, mem_size):
         # Allocate DDR memory
         # Default DDR dtype is 32 bit unsigned, which is of size 4B.
         self.ddr = allocate(shape=(int(1048576*mem_size/4),))
