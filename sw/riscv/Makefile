@@ -28,12 +28,9 @@ LIB_DRIVERS        += $(wildcard lib/hal/spi_mem/*.c)
 LIB_DRIVERS        += $(wildcard lib/hal/spi_memio/*.c)
 LIB_DRIVERS        += $(wildcard lib/hal/spi_host/*.c)
 LIB_DRIVERS        += $(wildcard lib/hal/pad_control/*.c)
-LIB_DRIVERS        += $(wildcard lib/sdk/vadc/*.c)
-LIB_DRIVERS        += $(wildcard lib/sdk/perf/*.c)
 INC_FOLDERS        = $(sort $(dir $(wildcard lib/target/)))
 INC_FOLDERS        += $(sort $(dir $(wildcard lib/base/)))
 INC_FOLDERS        += $(sort $(dir $(wildcard lib/hal/*/)))
-INC_FOLDERS        += $(sort $(dir $(wildcard lib/sdk/*/)))
 INC_FOLDERS        += $(sort $(dir $(wildcard lib/runtime/)))
 INC_FOLDERS_GCC    = $(addprefix -I ,$(INC_FOLDERS))
 
@@ -41,7 +38,7 @@ INC_FOLDERS_GCC    = $(addprefix -I ,$(INC_FOLDERS))
 	$(RISCV_EXE_PREFIX)objcopy -O binary $< $@
 
 %.dis: %.elf
-	$(RISCV_EXE_PREFIX)objdump -S $< > $@
+	$(RISCV_EXE_PREFIX)objdump -D $< > $@
 
 apps/hello_world/hello_world.elf: apps/hello_world/hello_world.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
@@ -123,7 +120,7 @@ apps/energy_estimation/energy_estimation.elf: apps/energy_estimation/energy_esti
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
 
-apps/vadc_example/vadc_example.elf: apps/vadc_example/vadc_example.c
+apps/virtual_obi_read/virtual_obi_read.elf: apps/virtual_obi_read/virtual_obi_read.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
 		-DHOST_BUILD \
@@ -135,7 +132,71 @@ apps/vadc_example/vadc_example.elf: apps/vadc_example/vadc_example.c
 		$^ $(LIB_RUNTIME) \
 		$(LIB_BASE) \
 		$(LIB_DRIVERS) \
-		-Wl,-Map=apps/vadc_example/vadc_example.map \
+		-Wl,-Map=apps/virtual_obi_read/virtual_obi_read.map \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+
+apps/virtual_obi_write/virtual_obi_write.elf: apps/virtual_obi_write/virtual_obi_write.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		$(CUSTOM_GCC_FLAGS) \
+		-DHOST_BUILD \
+		-T link/link.ld \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		$(INC_FOLDERS_GCC) \
+		-static \
+		$(LIB_CRT) \
+		$^ $(LIB_RUNTIME) \
+		$(LIB_BASE) \
+		$(LIB_DRIVERS) \
+		-Wl,-Map=apps/virtual_obi_write/virtual_obi_write.map \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+
+apps/virtual_gpio_write/virtual_gpio_write.elf: apps/virtual_gpio_write/virtual_gpio_write.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		$(CUSTOM_GCC_FLAGS) \
+		-DHOST_BUILD \
+		-T link/link.ld \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		$(INC_FOLDERS_GCC) \
+		-static \
+		$(LIB_CRT) \
+		$^ $(LIB_RUNTIME) \
+		$(LIB_BASE) \
+		$(LIB_DRIVERS) \
+		-Wl,-Map=apps/virtual_gpio_write/virtual_gpio_write.map \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+
+apps/virtual_gpio_read/virtual_gpio_read.elf: apps/virtual_gpio_read/virtual_gpio_read.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		$(CUSTOM_GCC_FLAGS) \
+		-DHOST_BUILD \
+		-T link/link.ld \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		$(INC_FOLDERS_GCC) \
+		-static \
+		$(LIB_CRT) \
+		$^ $(LIB_RUNTIME) \
+		$(LIB_BASE) \
+		$(LIB_DRIVERS) \
+		-Wl,-Map=apps/virtual_gpio_read/virtual_gpio_read.map \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+
+apps/virtual_ddr/virtual_ddr.elf: apps/virtual_ddr/virtual_ddr.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		$(CUSTOM_GCC_FLAGS) \
+		-DHOST_BUILD \
+		-T link/link.ld \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		$(INC_FOLDERS_GCC) \
+		-static \
+		$(LIB_CRT) \
+		$^ $(LIB_RUNTIME) \
+		$(LIB_BASE) \
+		$(LIB_DRIVERS) \
+		-Wl,-Map=apps/virtual_ddr/virtual_ddr.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
 
