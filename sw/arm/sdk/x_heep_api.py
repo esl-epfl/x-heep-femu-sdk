@@ -7,6 +7,7 @@
 from pynq import Overlay
 from pynq import MMIO
 from pynq import allocate
+from pynq import PL
 
 import x_heep_thread as xht
 from x_heep_gpio import *
@@ -16,17 +17,14 @@ import subprocess
 import serial
 import time
 
-OBI_AXI_ADDRESS_ADDER_OFFSET        = 0x43C10000
-PERFORMANCE_COUNTERS_OFFSET         = 0x43C20000
-R_OBI_AXI_BRIDGE_OFFSET             = 0x43C30000
-R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET  = 0x43C40000
 FLASH_AXI_ADDRESS_ADDER_OFFSET      = 0x44A00000
 
 class x_heep(Overlay):
 
-    def __init__(self, **kwargs):
+    def __init__(self, bitstream="/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs):
         # Load bitstream
-        super().__init__("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs)
+        PL.reset()
+        super().__init__(bitstream, **kwargs)
         self.uart_data = []
         self.release_reset()
         self.release_execute_from_flash()
@@ -34,9 +32,10 @@ class x_heep(Overlay):
         print("✅ Bitstream loaded")
 
 
-    def load_bitstream(self):
+    def load_bitstream(self, bitstream="/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit"):
         # Load bitstream
-        x_heep = Overlay("/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit")
+        PL.reset()
+        x_heep = Overlay(bitstream)
         print("✅ Bitstream loaded")
         return x_heep
 
