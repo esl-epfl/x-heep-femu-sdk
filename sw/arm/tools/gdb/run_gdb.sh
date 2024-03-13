@@ -6,4 +6,6 @@
 
 #!/bin/bash
 
-sudo /tools/riscv/bin/riscv32-unknown-elf-gdb --command=./$1.init
+gdb_output=$(sudo /tools/riscv/bin/riscv32-unknown-elf-gdb --command=./$1.init)
+return_value=$(echo "$gdb_output" | awk '/\$1 =/ {print $NF}')
+exit $return_value

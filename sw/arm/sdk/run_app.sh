@@ -6,15 +6,6 @@
 
 #!/bin/bash
 
-# Quit screen sessions
-pkill screen
-sudo pkill screen
-
-# Run UART
-cd /home/xilinx/x-heep-femu-sdk/sw/arm/tools/uart/
-sudo ./run_uart.sh
-cd - > /dev/null 2>&1
-
 # Run OpenOCD
 cd /home/xilinx/x-heep-femu-sdk/sw/arm/tools/openocd
 sudo ./run_openocd.sh
@@ -26,9 +17,11 @@ cd /home/xilinx/x-heep-femu-sdk/sw/arm/tools/gdb
 if [ $# -eq 0 ]
 then
 	sudo ./run_gdb.sh all > /dev/null 2>&1
+	res=$?
 elif [ $1 = "debug" ]
 then
 	sudo ./run_gdb.sh debug
+	res=$?
 else
 	echo "Wrong parameter!"
 fi
@@ -36,12 +29,8 @@ fi
 cd - > /dev/null 2>&1
 
 # Quit OpenOCD
-sudo screen -X -S openocd quit
+# sudo screen -X -S openocd quit
+# sudo screen -X quit
+sudo killall screen # The previous approaches would, for reasons escaping my understanding, leave screen sessions open
 
-# Quit UART
-sudo screen -X -S uart quit
-echo
-echo "--- APPLICATION OUTPUT ---"
-echo
-cat /home/xilinx/x-heep-femu-sdk/sw/riscv/build/stdout.txt
-echo
+exit $res
