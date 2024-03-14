@@ -8,8 +8,8 @@ from pynq import MMIO
 from pynq import allocate
 import csv
 
-# PERFORMANCE_COUNTERS_OFFSET = 0x44A10000 # For the vADC
 PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
+# PERFORMANCE_COUNTERS_OFFSET = 0x44A10000 # Uncomment to use the vADC
 
 class PerfCounters():
     def __init__(self):
