@@ -7,17 +7,14 @@
 from pynq import MMIO
 from pynq import allocate
 
-R_OBI_AXI_BRIDGE_OFFSET            = 0x43C30000
-R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET = 0x43C40000
-OBI_AXI_ADDRESS_ADDER_OFFSET       = 0x43C10000
-
 class OBI():
 
-    def __init__(self):
+    def __init__(self, x_heep):
         # Allocate OBI memory
         self.obi = allocate(shape=(1024,))
         # Write OBI memory base address to AXI address adder
-        axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        self.OBI_AXI_ADDRESS_ADDER_OFFSET = x_heep.address_map["AXI_S_OBI"]
+        axi_address_adder = MMIO(self.OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
         axi_address_adder.write(0x0, self.obi.physical_address)
         # Reset OBI memory
         self.obi[:] = 0
@@ -42,21 +39,24 @@ class OBI():
 
 class rOBI():
 
-    def __init__(self, memory_bank_id):
+    def __init__(self, x_heep, memory_bank_id):
         # Write reverse OBI memory base address to AXI address adder
-        self.axi_address_adder = MMIO(R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        self.R_OBI_AXI_BRIDGE_OFFSET            = x_heep.address_map["AXI_S_R_OBI"]
+        self.R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET = x_heep.address_map["AXI_S_R_OBI_BAA"]
+
+        self.axi_address_adder = MMIO(self.R_OBI_BAA_AXI_ADDRESS_ADDER_OFFSET, 0x4)
         self.axi_address_adder.write(0x0, 0x00008000 * memory_bank_id)
 
 
     def write_r_obi(self, data, offset, width):
         # Write reverse OBI
-        reverse_obi_bridge = MMIO(R_OBI_AXI_BRIDGE_OFFSET, width)
+        reverse_obi_bridge = MMIO(self.R_OBI_AXI_BRIDGE_OFFSET, width)
         reverse_obi_bridge.write(offset, data)
 
 
     def read_r_obi(self, offset, width):
         # Read reverse OBI
-        reverse_obi_bridge = MMIO(R_OBI_AXI_BRIDGE_OFFSET, width)
+        reverse_obi_bridge = MMIO(self.R_OBI_AXI_BRIDGE_OFFSET, width)
         data_read = reverse_obi_bridge.read(offset)
         return data_read
 

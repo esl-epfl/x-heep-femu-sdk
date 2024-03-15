@@ -11,13 +11,12 @@ from pynq import PL
 
 import x_heep_thread as xht
 from x_heep_gpio import *
+from x_heep_peripheral import get_address_map
 
 import os
 import subprocess
 import serial
 import time
-
-FLASH_AXI_ADDRESS_ADDER_OFFSET      = 0x44A00000
 
 class x_heep(Overlay):
 
@@ -25,6 +24,10 @@ class x_heep(Overlay):
         # Load bitstream
         PL.reset()
         super().__init__(bitstream, **kwargs)
+        
+        # Parse AXI addresses of the peripherals
+        self.address_map = get_address_map(bitstream)
+        
         self.uart_data = []
         self.release_reset()
         self.release_execute_from_flash()
@@ -101,6 +104,7 @@ class x_heep(Overlay):
         flash = allocate(shape=(32768,))
 
         # Write Flash base address to AXI address adder
+        FLASH_AXI_ADDRESS_ADDER_OFFSET = self.address_map["AXI_S_FLASH"]
         axi_address_adder = MMIO(FLASH_AXI_ADDRESS_ADDER_OFFSET, 0x4)
         axi_address_adder.write(0x0, flash.physical_address)
 

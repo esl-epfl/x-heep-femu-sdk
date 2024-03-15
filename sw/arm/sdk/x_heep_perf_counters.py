@@ -8,14 +8,13 @@ from pynq import MMIO
 from pynq import allocate
 import csv
 
-PERFORMANCE_COUNTERS_OFFSET = 0x43C20000
-# PERFORMANCE_COUNTERS_OFFSET = 0x44A10000 # Uncomment to use the vADC
-
 class PerfCounters():
-    def __init__(self):
+    def __init__(self, x_heep):
+        # Get performance counter address
+        self.PERFORMANCE_COUNTERS_OFFSET = x_heep.address_map["AXI_S_PERF_CNT"]
 
         # Map performance counters
-        self.pc = MMIO(PERFORMANCE_COUNTERS_OFFSET, 256)
+        self.pc = MMIO(self.PERFORMANCE_COUNTERS_OFFSET, 256)
 
         # Reset performance counters
         self.pc.write(0x0, 0x1)

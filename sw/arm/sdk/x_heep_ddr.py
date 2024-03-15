@@ -8,15 +8,14 @@
 from pynq import MMIO
 from pynq import allocate
 
-OBI_AXI_ADDRESS_ADDER_OFFSET = 0x43C10000
-
 class DDR():
-    def __init__(self, mem_size):
+    def __init__(self, x_heep, mem_size):
         # Allocate DDR memory
         # Default DDR dtype is 32 bit unsigned, which is of size 4B.
         self.ddr = allocate(shape=(int(1048576*mem_size/4),))
         # Write DDR memory base address to AXI address adder
-        axi_address_adder = MMIO(OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        self.OBI_AXI_ADDRESS_ADDER_OFFSET = x_heep.address_map["AXI_S_OBI"]
+        axi_address_adder = MMIO(self.OBI_AXI_ADDRESS_ADDER_OFFSET, 0x4)
         axi_address_adder.write(0x0, self.ddr.physical_address)
         # Reset DDR memory
         self.ddr[:] = 0

@@ -8,14 +8,13 @@
 from pynq import MMIO
 from pynq import allocate
 
-FLASH_AXI_ADDRESS_ADDER_OFFSET     = 0x43C00000
-
 class Flash():
-    def __init__(self):
+    def __init__(self, x_heep):
         # Allocate Flash
         self.flash = allocate(shape=(32768,))
         # Write Flash base address to AXI address adder
-        axi_address_adder = MMIO(FLASH_AXI_ADDRESS_ADDER_OFFSET, 0x4)
+        self.FLASH_AXI_ADDRESS_ADDER_OFFSET = x_heep.address_map["AXI_S_FLASH"]
+        axi_address_adder = MMIO(self.FLASH_AXI_ADDRESS_ADDER_OFFSET, 0x4)
         axi_address_adder.write(0x0, self.flash.physical_address)
         # Reset Flash
         self.flash[:] = 0
