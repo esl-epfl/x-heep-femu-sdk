@@ -12,17 +12,14 @@ import x_heep_thread as xht
 import threading
 import math
 
-VIRTUAL_ADC_OFFSET = 0x80000000
-ADC_OFFSET = 0x40000000
-
 class vADC():
 
-    def __init__(self, bin_file_name, DDR_buffer_size_64B=512):
+    def __init__(self, x_heep, bin_file_name, DDR_buffer_size_64B=512):
         # Create a stop flag to halt the process later
         self.stop_flag = threading.Event()
 
         # Create and program the virtual ADC controller in the PL
-        self.init_virtual_adc(DDR_buffer_size_64B)
+        self.init_virtual_adc(DDR_buffer_size_64B, x_heep)
 
         # Create the thread running the selected process
         self.thread = threading.Thread( target=self.ddr_circular_buffer_thread,  args=(self.stop_flag, bin_file_name, self.DDR_buffer, DDR_buffer_size_64B) )
@@ -34,7 +31,7 @@ class vADC():
         time.sleep(3)
 
 
-    def init_virtual_adc(self, size_8B):
+    def init_virtual_adc(self, size_8B, x_heep):
 
         # Allocate Virtual ADC DDR buffer
         # The size is in 32 bit words, meaning that 4*size bytes will ber reserved
@@ -43,9 +40,11 @@ class vADC():
         self.DDR_buffer[:] = 0
 
         # Map the Virtual ADC block
-        self.vadc_instance = MMIO(VIRTUAL_ADC_OFFSET, 64*1024) # Size mapped by Vivado
+        self.VIRTUAL_ADC_OFFSET = x_heep.address_map["Buffer_ADC_0"]
+        self.vadc_instance = MMIO(self.VIRTUAL_ADC_OFFSET, 64*1024) # Size mapped by Vivado
 
-        self.adc_mem = MMIO(ADC_OFFSET, 8192)
+        self.ADC_OFFSET = x_heep.address_map["axi_bram_ctrl_0"]
+        self.adc_mem = MMIO(self.ADC_OFFSET, 8192)
         self.adc_mem.read(0)
 
         # Reset all values to default

@@ -23,17 +23,17 @@ class x_heep(Overlay):
     def __init__(self, bitstream="/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit", **kwargs):
         # Load bitstream
         PL.reset()
+        self.bitstream = bitstream
         super().__init__(bitstream, **kwargs)
-        
+
         # Parse AXI addresses of the peripherals
         self.address_map = get_address_map(bitstream)
-        
+
         self.uart_data = []
         self.release_reset()
         self.release_execute_from_flash()
         self.release_boot_select()
         print("✅ Bitstream loaded")
-
 
     def load_bitstream(self, bitstream="/home/xilinx/x-heep-femu-sdk/hw/x_heep.bit"):
         # Load bitstream
