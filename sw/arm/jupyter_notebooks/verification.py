@@ -10,6 +10,9 @@ import datetime
 
 list_of_tests = [file for file in os.listdir(os.getcwd()) if file.endswith('.ipynb')]
 print(f"{len(list_of_tests)} applications to be tested.")
+print("Make sure you have initialized the environment running the init.sh script!" )
+print("$ sudo su")
+print("$ source x-heep-femu-sdk/init.sh")
 
 for file in list_of_tests:
     print(f"Launched {file[:-6].ljust(max(len(s)-6 for s in list_of_tests))} at {datetime.datetime.now().strftime('%H:%M:%S')}", end=' ', flush=True)
