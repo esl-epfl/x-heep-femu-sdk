@@ -1,0 +1,3 @@
+[submodule "adc-emu"] 
+  path = sw/arm/sdk/adc-emu 
+  url = https://github.com/JuanSapriza/ADC-emulator.git

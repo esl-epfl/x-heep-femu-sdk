@@ -28,9 +28,12 @@ LIB_DRIVERS        += $(wildcard lib/hal/spi_mem/*.c)
 LIB_DRIVERS        += $(wildcard lib/hal/spi_memio/*.c)
 LIB_DRIVERS        += $(wildcard lib/hal/spi_host/*.c)
 LIB_DRIVERS        += $(wildcard lib/hal/pad_control/*.c)
+LIB_DRIVERS        += $(wildcard lib/sdk/vadc/*.c)
+LIB_DRIVERS        += $(wildcard lib/sdk/perf/*.c)
 INC_FOLDERS        = $(sort $(dir $(wildcard lib/target/)))
 INC_FOLDERS        += $(sort $(dir $(wildcard lib/base/)))
 INC_FOLDERS        += $(sort $(dir $(wildcard lib/hal/*/)))
+INC_FOLDERS        += $(sort $(dir $(wildcard lib/sdk/*/)))
 INC_FOLDERS        += $(sort $(dir $(wildcard lib/runtime/)))
 INC_FOLDERS_GCC    = $(addprefix -I ,$(INC_FOLDERS))
 
@@ -71,7 +74,24 @@ apps/virtual_flash_write/virtual_flash_write.elf: apps/virtual_flash_write/virtu
 		-Wl,-Map=apps/virtual_flash_write/virtual_flash_write.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
+
+apps/vadc_example/vadc_example.elf: apps/vadc_example/vadc_example.c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		$(CUSTOM_GCC_FLAGS) \
+		-DHOST_BUILD \
+		-T link/link.ld \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		$(INC_FOLDERS_GCC) \
+		-static \
+		$(LIB_CRT) \
+		$^ $(LIB_RUNTIME) \
+		$(LIB_BASE) \
+		$(LIB_DRIVERS) \
+		-Wl,-Map=apps/vadc_example/vadc_example.map \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
+
+
 apps/virtual_flash_read/virtual_flash_read.elf: apps/virtual_flash_read/virtual_flash_read.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
@@ -87,39 +107,7 @@ apps/virtual_flash_read/virtual_flash_read.elf: apps/virtual_flash_read/virtual_
 		-Wl,-Map=apps/virtual_flash_read/virtual_flash_read.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
-apps/virtual_adc_write/virtual_adc_write.elf: apps/virtual_adc_write/virtual_adc_write.c
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T link/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-Wl,-Map=apps/virtual_adc_write/virtual_adc_write.map \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
-apps/virtual_adc_read/virtual_adc_read.elf: apps/virtual_adc_read/virtual_adc_read.c
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
-		$(CUSTOM_GCC_FLAGS) \
-		-DHOST_BUILD \
-		-T link/link.ld \
-		-I $(RISCV)/riscv32-unknown-elf/include \
-		$(INC_FOLDERS_GCC) \
-		-static \
-		$(LIB_CRT) \
-		$^ $(LIB_RUNTIME) \
-		$(LIB_BASE) \
-		$(LIB_DRIVERS) \
-		-Wl,-Map=apps/virtual_adc_read/virtual_adc_read.map \
-		-L $(RISCV)/riscv32-unknown-elf/lib \
-		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
+
 apps/performance_estimation/performance_estimation.elf: apps/performance_estimation/performance_estimation.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
@@ -135,7 +123,7 @@ apps/performance_estimation/performance_estimation.elf: apps/performance_estimat
 		-Wl,-Map=apps/performance_estimation/performance_estimation.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
+
 apps/energy_estimation/energy_estimation.elf: apps/energy_estimation/energy_estimation.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
@@ -167,7 +155,7 @@ apps/virtual_obi_read/virtual_obi_read.elf: apps/virtual_obi_read/virtual_obi_re
 		-Wl,-Map=apps/virtual_obi_read/virtual_obi_read.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
+
 apps/virtual_obi_write/virtual_obi_write.elf: apps/virtual_obi_write/virtual_obi_write.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
@@ -199,7 +187,7 @@ apps/virtual_gpio_write/virtual_gpio_write.elf: apps/virtual_gpio_write/virtual_
 		-Wl,-Map=apps/virtual_gpio_write/virtual_gpio_write.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
+
 apps/virtual_gpio_read/virtual_gpio_read.elf: apps/virtual_gpio_read/virtual_gpio_read.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \
@@ -215,7 +203,7 @@ apps/virtual_gpio_read/virtual_gpio_read.elf: apps/virtual_gpio_read/virtual_gpi
 		-Wl,-Map=apps/virtual_gpio_read/virtual_gpio_read.map \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc -flto -ffunction-sections -fdata-sections -specs=nano.specs
-        
+
 apps/virtual_ddr/virtual_ddr.elf: apps/virtual_ddr/virtual_ddr.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		$(CUSTOM_GCC_FLAGS) \

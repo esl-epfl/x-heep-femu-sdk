@@ -32,11 +32,8 @@ volatile int8_t dma_intr_flag;
 
 spi_host_t spi_host_flash;
 
-void handler_irq_fast_dma(void)
+void vadc_done(void)
 {
-    fast_intr_ctrl_t fast_intr_ctrl;
-    fast_intr_ctrl.base_addr = mmio_region_from_addr((uintptr_t)FAST_INTR_CTRL_START_ADDRESS);
-    clear_fast_interrupt(&fast_intr_ctrl, kDma_fic_e);
     dma_intr_flag = 1;
 }
 

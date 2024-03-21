@@ -1,0 +1,1 @@
+1 channel for time. 6 channels for EEG at 14 bits resolution and dynamic range of +-1.5 mV bandwidth of 0.8-44 Hz. 2 SPR (EDA) channels at 12 bits resolution, +-10 mV dynamic range, 0.08-8 Hz bandwidth, 2 ECG channels at 14 bits, -5 mV dynamic range, bandwidth of 0.08-75 Hz. All are acquired at 200 Hz. 
