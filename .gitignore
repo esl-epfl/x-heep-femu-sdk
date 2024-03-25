@@ -7,6 +7,6 @@
 *.do
 *.jou
 
-sw/arm/jupyter_notebooks/.ipynb_checkpoints/
-sw/arm/sdk/__pycache__/
+*.ipynb_checkpoints*
+*__pycache__*
 sw/riscv/build/
